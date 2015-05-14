@@ -1,4 +1,4 @@
-package com.example.lasyaboddapati.traveldiaries;
+package com.example.traveldiaries;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,7 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-
+//import com.example.lasyaboddapati.traveldiaries.R;
 
 public class AddPhotoNoteActivity extends Activity {
     static final int REQUEST_IMAGE_CAPTURE = 1;

@@ -1,4 +1,4 @@
-package com.example.lasyaboddapati.traveldiaries;
+package com.example.traveldiaries;
 
 import android.app.Application;
 import com.parse.Parse;

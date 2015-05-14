@@ -1,4 +1,4 @@
-package com.example.lasyaboddapati.traveldiaries;
+package com.example.traveldiaries;
 
 import android.content.Intent;
 import android.graphics.Color;
