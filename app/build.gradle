@@ -17,8 +17,24 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    /*buildTypes {
+        release {
+            runProguard true
+            proguardFile 'proguard-google-api-client.txt'
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+        }
+    }*/
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+dependencies {
+    compile 'com.parse.bolts:bolts-android:1.+'
+    compile fileTree(dir: 'libs', include: 'Parse-*.jar')
+}
+dependencies {
+    compile 'com.google.android.gms:play-services:4.2.42'
+    compile 'com.android.support:appcompat-v7:21.+'
 }

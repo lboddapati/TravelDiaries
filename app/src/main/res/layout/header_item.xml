@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="A -> B"
+        android:textSize="20sp"
+        android:id="@+id/legHeader" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="2.5 miles, 1.5 hours, ETA: 7:00pm"
+        android:id="@+id/legDetails"
+        android:layout_below="@id/legHeader"
+        android:layout_alignParentRight="true" />
+</RelativeLayout>
