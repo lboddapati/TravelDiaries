@@ -11,5 +11,6 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_done">Done</string>
     <string name="title_activity_previous_trip">Previous Trips</string>
+    <string name="title_activity_maps">Map</string>
 
 </resources>
