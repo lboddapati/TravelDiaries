@@ -1,5 +1,27 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:id="@+id/map"
-    tools:context="com.example.traveldiaries.MapsActivity"
-    android:name="com.google.android.gms.maps.SupportMapFragment" />
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <fragment
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/map"
+        tools:context="com.example.traveldiaries.MapsActivity"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        map:cameraZoom="10"
+        map:mapType="normal"
+        android:layout_weight="1"/>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/places"
+        android:layout_below="@+id/map"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:layout_weight="1"/>
+</LinearLayout>

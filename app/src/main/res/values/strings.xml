@@ -12,5 +12,6 @@
     <string name="action_done">Done</string>
     <string name="title_activity_previous_trip">Previous Trips</string>
     <string name="title_activity_maps">Map</string>
+    <string name="title_activity_my_photos">MyPhotos</string>
 
 </resources>
