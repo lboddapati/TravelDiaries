@@ -47,11 +47,7 @@
         </activity>
         <activity
             android:name=".PreviousTrip"
-            android:label="@string/title_activity_previous_trip"
-            android:parentActivityName=".LoginActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.traveldiaries.LoginActivity" />
+            android:label="@string/title_activity_previous_trip" >
         </activity>
         <activity
             android:name=".MapTripActivity"

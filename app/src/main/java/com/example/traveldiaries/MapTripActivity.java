@@ -1,17 +1,23 @@
 package com.example.traveldiaries;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Outline;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewOutlineProvider;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,6 +25,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -32,17 +45,26 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MapTripActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private JSONObject directionsJSONObject;
+    private ParseObject trip;
+    private ParseUser user;
+    static final int REQUEST_TAKE_PHOTONOTES = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        user = ParseUser.getCurrentUser();
+
         setContentView(R.layout.activity_map_trip);
 
         if (android.os.Build.VERSION.SDK_INT > 9) {
@@ -63,29 +85,40 @@ public class MapTripActivity extends FragmentActivity {
                 startTrip.setVisibility(View.GONE);
                 addPicture.setVisibility(View.VISIBLE);
                 directionsListView.setVisibility(View.VISIBLE);
+
+                JSONObject route;
                 try {
                     if(directionsJSONObject != null) {
-                        displayDirections(directionsJSONObject.getJSONArray("routes").getJSONObject(0));
+                        route = directionsJSONObject.getJSONArray("routes").getJSONObject(0);
+                        trip = new ParseObject("Trip");
+                        trip.put("tripName", "SomeTrip");
+                        trip.put("places", route);
+                        trip.put("user", user);
+                        trip.saveInBackground();
+                        displayDirections(route);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
             }
         });
 
-        addPicture.setOutlineProvider(new ViewOutlineProvider() {
+        /*addPicture.setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View view, Outline outline) {
                 int diameter = getResources().getDimensionPixelSize(R.dimen.round_button_diameter);
                 outline.setOval(0, 0, diameter, diameter);
             }
         });
-        addPicture.setClipToOutline(true);
+        addPicture.setClipToOutline(true);*/
+
         addPicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent pictureIntent = new Intent(MapTripActivity.this, AddPhotoNoteActivity.class);
-                startActivity(pictureIntent);
+                //pictureIntent.putExtra("trip", trip.toString());
+                startActivityForResult(pictureIntent, REQUEST_TAKE_PHOTONOTES);
             }
         });
     }
@@ -148,7 +181,6 @@ public class MapTripActivity extends FragmentActivity {
                 throw new RuntimeException("Failed : HTTP error code : "
                         + response.getStatusLine().getStatusCode());
             } else {
-                //String jsonString = EntityUtils.toString(response.getEntity());
                 directionsJSONObject = new JSONObject(EntityUtils.toString(response.getEntity()));
                 drawRoute();
             }
@@ -162,7 +194,6 @@ public class MapTripActivity extends FragmentActivity {
 
     private void drawRoute() {
         try {
-            //JSONObject json = new JSONObject(jsonString);
             JSONArray routes = directionsJSONObject.getJSONArray("routes");
             JSONObject route = routes.getJSONObject(0);
             JSONObject overviewPolyline = route.getJSONObject("overview_polyline");
@@ -178,35 +209,10 @@ public class MapTripActivity extends FragmentActivity {
                         .color(Color.BLUE)
                         .geodesic(true));
             }
-
-
-            /*PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.addAll(points);
-            polylineOptions.width(5);
-            polylineOptions.color(Color.GREEN);
-            polylineOptions.geodesic(true);
-            mMap.addPolyline(polylineOptions);*/
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
-
-    /*private LatLng[] decodePolylines(String encodedPolylines) {
-        int[] ascii2int = new int[encodedPolylines.length()];
-        for(int i=0; i<encodedPolylines.length(); i++) {
-            ascii2int[i] = (int)encodedPolylines.charAt(i) - 63;
-            ascii2int[i] &= 0x1f;
-        }
-        for (int i=0; i<ascii2int.length/2; i++) {
-            int temp = ascii2int[i];
-            ascii2int[i] = ascii2int[ascii2int.length-i-1];
-            ascii2int[ascii2int.length-i-1] = temp;
-        }
-        for (int x : ascii2int) {
-            Log.d("DECODE", Integer.toBinaryString(x)+" ");
-        }
-        return new LatLng[0];
-    }*/
 
     private ArrayList<LatLng> decodePolylines(String encodedPolylines) {
         int N = encodedPolylines.length();
@@ -247,4 +253,86 @@ public class MapTripActivity extends FragmentActivity {
         DirectionsExpandableListAdapter adapter = new DirectionsExpandableListAdapter(getBaseContext(), route);
         directionsListView.setAdapter(adapter);
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_TAKE_PHOTONOTES && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            ArrayList<Bitmap> photos = extras.getParcelableArrayList("photos");
+            ArrayList<String> notes = extras.getStringArrayList("notes");
+            //ParseGeoPoint geoPoint = getCurrentLocation();
+            ParseGeoPoint geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
+            if(uploadImagesToCloud(photos, notes, geoPoint)) {
+                Toast.makeText(MapTripActivity.this, photos.size() + " Photos Added!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MapTripActivity.this, "Error:: Photos Upload Failed!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private boolean uploadImagesToCloud(ArrayList<Bitmap> photos, final ArrayList<String> notes, final ParseGeoPoint geoPoint) {
+        Boolean uploadSuccess;
+
+        if(geoPoint != null) {
+            for (int i = 0; i < photos.size(); i++) {
+                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                photos.get(i).compress(Bitmap.CompressFormat.JPEG, 100, byteStream);
+                byte[] data = byteStream.toByteArray();
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                String imageFileName = trip.getObjectId() +"_image_"+ timeStamp + ".jpeg";  //TODO: replcae with actual trip ID
+                final ParseFile parseImageFile = new ParseFile(imageFileName, data);
+                final String caption = notes.get(i);
+
+                parseImageFile.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e != null) {
+                            Toast.makeText(MapTripActivity.this, "Error saving:: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        } else {
+                            ParseObject imageObject = new ParseObject("TripPhotoNote");
+                            imageObject.put("photo", parseImageFile);
+                            imageObject.put("note", caption);
+                            imageObject.put("location", geoPoint);
+                            imageObject.put("trip", trip);
+                            imageObject.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if(e != null) {
+                                        Log.d("PARSE UPLOAD", "ERROR:: UPLOAD FAILED!!!!!   "+e.getMessage());
+                                    } else {
+                                        Log.d("PARSE UPLOAD", "UPLOADED SUCCESSFULLY!!!!!");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+            uploadSuccess = true;
+        } else {
+            //TODO: Prompt for entering location
+            uploadSuccess = false;
+        }
+        return  uploadSuccess;
+    }
+
+    private ParseGeoPoint getCurrentLocation() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Location lastKnownLocation = null;
+        if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            Log.d("GET CURRENT LOCATION", "NETWORK_PROVIDER ENABLED");
+            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Log.d("GET CURRENT LOCATION", "GPS_PROVIDER ENABLED");
+            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        }
+
+        if(lastKnownLocation != null) {
+            return new ParseGeoPoint(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+        } else {
+            Toast.makeText(MapTripActivity.this, "Error :: Could not get current location", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
+
 }
