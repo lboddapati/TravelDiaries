@@ -64,6 +64,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.traveldiaries.PreviousTrip" />
         </activity>
+        <activity
+            android:name=".MyPhotos"
+            android:label="@string/title_activity_my_photos"
+            android:parentActivityName=".MapsActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.traveldiaries.MapsActivity" />
+        </activity>
     </application>
 
 </manifest>
