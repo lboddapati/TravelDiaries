@@ -30,7 +30,6 @@ public class PreviousTrip extends Activity {
         super.onCreate(savedInstanceState);
 
         List<ParseObject> trips = new ArrayList<ParseObject>();
-        ArrayList<ArrayList<ParseObject>> tripPhotoNotes = new ArrayList<ArrayList<ParseObject>>();
         final ArrayList<String> trip_names = new ArrayList<String>();
         final ArrayList<Bitmap> trip_icons = new ArrayList<Bitmap>();
 
@@ -50,17 +49,16 @@ public class PreviousTrip extends Activity {
 
         for(ParseObject trip : trips) {
             trip_names.add(trip.getString("tripName"));
+
             ParseQuery<ParseObject> picsQuery = ParseQuery.getQuery("TripPhotoNote");
-            picsQuery.whereEqualTo("trip", trip);
-            ArrayList<ParseObject> photoNotes = null;
+            picsQuery.whereEqualTo("trip", trip.getObjectId());
+            //ArrayList<ParseObject> photoNotes = null;
+            ParseObject photoNote = null;
             Bitmap icon = null;
             try {
-                photoNotes = (ArrayList<ParseObject>) picsQuery.find();
-                //Log.d("PHOTOS1111111111111111111111", trip.getObjectId()+" has "+photoNotes.size()+" photos");
-                if(photoNotes != null && photoNotes.size()>0) {
-                    //Log.d("PHOTOS", trip.getObjectId()+" has "+photoNotes.size()+" photos");
-                    byte[] data = photoNotes.get(0).getParseFile("photo").getData();
-                    //Log.d("PHOTO ICON", "size= "+data.length);
+                photoNote = picsQuery.getFirst();
+                if(photoNote != null) {
+                    byte[] data = photoNote.getParseFile("photo").getData();
                     icon = BitmapFactory.decodeByteArray(data, 0, data.length, options);
                 }
             } catch (ParseException e) {
@@ -70,7 +68,6 @@ public class PreviousTrip extends Activity {
                 if( icon == null) {
                     icon = BitmapFactory.decodeResource(getResources(), R.drawable.defaulticon, options);
                 }
-                tripPhotoNotes.add(photoNotes);
                 trip_icons.add(icon);
             }
         }
@@ -89,10 +86,12 @@ public class PreviousTrip extends Activity {
         GridView gridview = (GridView) findViewById(R.id.gridview);
         //Toast.makeText(this, " setting adapter", Toast.LENGTH_SHORT).show();
         gridview.setAdapter(new PicAdapter(this, trip_names, trip_icons));
+        final List<ParseObject> finalTrips = trips;
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 Intent intent;
                 intent = new Intent(PreviousTrip.this, MapsActivity.class);
+                intent.putExtra("tripId", finalTrips.get(position).getObjectId());
                 startActivity(intent);
             }
         });

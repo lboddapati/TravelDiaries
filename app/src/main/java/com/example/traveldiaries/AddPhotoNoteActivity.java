@@ -45,12 +45,14 @@ public class AddPhotoNoteActivity extends Activity {
     ImageView imagePreview;
     EditText imageCaption;
     int selected;
+    String tripId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         returnIntent = getIntent();
+        tripId = returnIntent.getStringExtra("tripId");
         photos = new ArrayList<Bitmap>();
         notes = new ArrayList<String>();
 
@@ -81,7 +83,7 @@ public class AddPhotoNoteActivity extends Activity {
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setResult(RESULT_CANCELED, returnIntent);
+                //setResult(RESULT_CANCELED, returnIntent);
                 finish();
             }
         });
@@ -89,11 +91,16 @@ public class AddPhotoNoteActivity extends Activity {
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bundle extras = new Bundle();
+                /*Bundle extras = new Bundle();
                 extras.putParcelableArrayList("photos", photos);
                 extras.putStringArrayList("notes", notes);
-                returnIntent.putExtras(extras);
-                setResult(RESULT_OK, returnIntent);
+                returnIntent.putExtras(extras);*/
+                //setResult(RESULT_OK, returnIntent);
+                if(uploadImagesToCloud()) {
+                    Toast.makeText(AddPhotoNoteActivity.this, photos.size() + " Photos Added!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(AddPhotoNoteActivity.this, "Error:: Photos Upload Failed!", Toast.LENGTH_SHORT).show();
+                }
                 finish();
             }
         });
@@ -105,7 +112,7 @@ public class AddPhotoNoteActivity extends Activity {
                 notes.remove(selected);
                 //Toast.makeText(AddPhotoNoteActivity.this, photos.size()+" Photos left!", Toast.LENGTH_SHORT).show();
                 if(photos.size() == 0) {
-                    setResult(RESULT_CANCELED, returnIntent);
+                    //setResult(RESULT_CANCELED, returnIntent);
                     finish();
                 } else {
                     ((BaseAdapter) picsThumbnailView.getAdapter()).notifyDataSetChanged();
@@ -152,7 +159,7 @@ public class AddPhotoNoteActivity extends Activity {
             setPreview(selected);
         } else {
             if(photos.size() == 0) {
-                setResult(RESULT_CANCELED, returnIntent);
+                //setResult(RESULT_CANCELED, returnIntent);
                 finish();
             }
         }
@@ -170,4 +177,70 @@ public class AddPhotoNoteActivity extends Activity {
         }
     }
 
+    private boolean uploadImagesToCloud() {
+        Boolean uploadSuccess;
+
+        //ParseGeoPoint geoPoint = getCurrentLocation();
+        final ParseGeoPoint geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
+        if(geoPoint != null) {
+            for (int i = 0; i < photos.size(); i++) {
+                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                photos.get(i).compress(Bitmap.CompressFormat.JPEG, 100, byteStream);
+                byte[] data = byteStream.toByteArray();
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                String imageFileName = tripId +"_image_"+ timeStamp +"_"+ i +".jpeg";
+                final ParseFile parseImageFile = new ParseFile(imageFileName, data);
+                final String caption = notes.get(i);
+
+                parseImageFile.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e != null) {
+                            Toast.makeText(AddPhotoNoteActivity.this, "Error saving:: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        } else {
+                            final ParseObject imageObject = new ParseObject("TripPhotoNote");
+                            imageObject.put("photo", parseImageFile);
+                            imageObject.put("note", caption);
+                            imageObject.put("location", geoPoint);
+                            imageObject.put("trip", tripId);
+                            imageObject.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if(e != null) {
+                                        Log.d("PARSE UPLOAD", "ERROR:: UPLOAD FAILED!!!!!   "+e.getMessage());
+                                    } else {
+                                        Log.d("PARSE UPLOAD", "UPLOADED SUCCESSFULLY!!!!!");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+            uploadSuccess = true;
+        } else {
+            //TODO: Prompt for entering location
+            uploadSuccess = false;
+        }
+        return  uploadSuccess;
+    }
+
+    private ParseGeoPoint getCurrentLocation() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Location lastKnownLocation = null;
+        if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            Log.d("GET CURRENT LOCATION", "NETWORK_PROVIDER ENABLED");
+            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Log.d("GET CURRENT LOCATION", "GPS_PROVIDER ENABLED");
+            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        }
+
+        if(lastKnownLocation != null) {
+            return new ParseGeoPoint(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+        } else {
+            Toast.makeText(AddPhotoNoteActivity.this, "Error :: Could not get current location", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
 }

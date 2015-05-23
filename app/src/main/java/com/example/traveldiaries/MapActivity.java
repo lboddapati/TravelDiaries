@@ -1,23 +1,11 @@
 package com.example.traveldiaries;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Outline;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewOutlineProvider;
-import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ExpandableListView;
-import android.widget.ImageButton;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,13 +13,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.parse.Parse;
-import com.parse.ParseException;
-import com.parse.ParseFile;
-import com.parse.ParseGeoPoint;
-import com.parse.ParseObject;
-import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -45,107 +26,56 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 
-//public class MapTripActivity extends FragmentActivity {
-public class MapTripActivity extends MapActivity {
+public abstract class MapActivity extends FragmentActivity {
 
-
-    /*private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    private JSONObject directionsJSONObject;
-    private ArrayList<LatLng> places;
-    JSONObject placesJSON;*/
-
-    private ParseObject trip;
-    private ParseUser user;
+    protected GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    protected JSONObject directionsJSONObject;
+    protected ArrayList<LatLng> places;
+    protected JSONObject placesJSON;
+    protected int layoutResID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //setContentView(R.layout.activity_map_trip);
-        setLayoutFile(R.layout.activity_map_trip);
         super.onCreate(savedInstanceState);
 
-        /*placesJSON = new JSONObject();  //TODO: Replace with actual places JSON object;
-        places = new ArrayList<LatLng>();
+        placesJSON = new JSONObject();  //TODO: Replace with actual places JSON object; passed through intent
+        places = new ArrayList<LatLng>();   //TODO: Replace with actual places.
         places.add(new LatLng(37.258881, -122.032913));
         places.add(new LatLng(37.270220, -122.015403));
         places.add(new LatLng(37.291732, -122.032398));
         places.add(new LatLng(37.287362, -121.944679));
-        places.add(new LatLng(37.240092, -121.960987));*/
-
-        user = ParseUser.getCurrentUser();
+        places.add(new LatLng(37.240092, -121.960987));
 
 
-        /*if (android.os.Build.VERSION.SDK_INT > 9) {
+        setContentView(layoutResID);
+
+        if (android.os.Build.VERSION.SDK_INT > 9) {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
         }
 
-        setUpMapIfNeeded();*/
-
-        final ExpandableListView directionsListView = (ExpandableListView) findViewById(R.id.directions);
-        final Button startTrip = (Button) findViewById(R.id.startTrip);
-        final ImageButton addPicture = (ImageButton) findViewById(R.id.addPicture);
-
-        startTrip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Log.d("START TRIP", "Starting trip");
-                startTrip.setVisibility(View.GONE);
-                addPicture.setVisibility(View.VISIBLE);
-                directionsListView.setVisibility(View.VISIBLE);
-
-                JSONObject route;
-                try {
-                    if(directionsJSONObject != null) {
-                        route = directionsJSONObject.getJSONArray("routes").getJSONObject(0);
-                        trip = new ParseObject("Trip");
-                        trip.put("tripName", "SomeTrip");
-                        trip.put("places", placesJSON);
-                        trip.put("route", route);
-                        trip.put("user", user);
-                        trip.saveInBackground();
-                        displayDirections(route);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-
-        /*addPicture.setOutlineProvider(new ViewOutlineProvider() {
-            @Override
-            public void getOutline(View view, Outline outline) {
-                int diameter = getResources().getDimensionPixelSize(R.dimen.round_button_diameter);
-                outline.setOval(0, 0, diameter, diameter);
-            }
-        });
-        addPicture.setClipToOutline(true);*/
-
-        addPicture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent pictureIntent = new Intent(MapTripActivity.this, AddPhotoNoteActivity.class);
-                pictureIntent.putExtra("tripId", trip.getObjectId());
-                startActivity(pictureIntent);
-                //startActivityForResult(pictureIntent, REQUEST_TAKE_PHOTONOTES);
-            }
-        });
+        setUpMapIfNeeded();
     }
 
-    /*@Override
+    @Override
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
-    }*/
+    }
 
-    /*private void setUpMapIfNeeded() {
+    /**
+     * The Activities which extend this Activity MUST call this method (instead of setContentView(..))
+     * in the onCreate method BEFORE calling super.onCreate(...).
+     * @param layoutResID The layout file to be set.
+     */
+    protected void setLayoutFile(int layoutResID) {
+        this.layoutResID = layoutResID;
+    }
+
+    protected void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
@@ -156,9 +86,9 @@ public class MapTripActivity extends MapActivity {
                 setUpMap();
             }
         }
-    }*/
+    }
 
-    /*private void setUpMap() {
+    protected void setUpMap() {
 
         for(int i=0; i< places.size(); i++) {
             mMap.addMarker(new MarkerOptions().position(places.get(i)).title("Place "+i));
@@ -192,7 +122,7 @@ public class MapTripActivity extends MapActivity {
                         + response.getStatusLine().getStatusCode());
             } else {
                 directionsJSONObject = new JSONObject(EntityUtils.toString(response.getEntity()));
-                drawRoute();
+                drawRoute(directionsJSONObject.getJSONArray("routes").getJSONObject(0));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -200,12 +130,10 @@ public class MapTripActivity extends MapActivity {
             e.printStackTrace();
         }
 
-    }*/
+    }
 
-    /*private void drawRoute() {
+    protected void drawRoute(JSONObject route) {
         try {
-            JSONArray routes = directionsJSONObject.getJSONArray("routes");
-            JSONObject route = routes.getJSONObject(0);
             JSONObject overviewPolyline = route.getJSONObject("overview_polyline");
             String encodedPolylines = overviewPolyline.getString("points");
             ArrayList<LatLng> points = decodePolylines(encodedPolylines);
@@ -222,9 +150,9 @@ public class MapTripActivity extends MapActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
-    /*private ArrayList<LatLng> decodePolylines(String encodedPolylines) {
+    protected ArrayList<LatLng> decodePolylines(String encodedPolylines) {
         int N = encodedPolylines.length();
         int lat = 0, lng = 0;
         ArrayList<LatLng> polylinePoints = new ArrayList<LatLng>();
@@ -256,31 +184,12 @@ public class MapTripActivity extends MapActivity {
         }
 
         return polylinePoints;
-    }*/
+    }
 
-    /*private void displayDirections(JSONObject route) {
+    protected void displayDirections(JSONObject route) {
         ExpandableListView directionsListView = (ExpandableListView) findViewById(R.id.directions);
         DirectionsExpandableListAdapter adapter = new DirectionsExpandableListAdapter(getBaseContext(), route);
         directionsListView.setAdapter(adapter);
-    }*/
-
-    /*@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_TAKE_PHOTONOTES && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            ArrayList<Bitmap> photos = extras.getParcelableArrayList("photos");
-            ArrayList<String> notes = extras.getStringArrayList("notes");
-            //ParseGeoPoint geoPoint = getCurrentLocation();
-            ParseGeoPoint geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
-            if(uploadImagesToCloud(photos, notes, geoPoint)) {
-                Toast.makeText(MapTripActivity.this, photos.size() + " Photos Added!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(MapTripActivity.this, "Error:: Photos Upload Failed!", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }*/
-
-
-
+    }
 
 }
