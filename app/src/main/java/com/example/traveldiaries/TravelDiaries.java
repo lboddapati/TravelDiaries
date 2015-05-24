@@ -13,7 +13,7 @@ public class TravelDiaries extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        Parse.enableLocalDatastore(getApplicationContext());
         Parse.initialize(this, ApplicationID, ClientKey);
     }
 }

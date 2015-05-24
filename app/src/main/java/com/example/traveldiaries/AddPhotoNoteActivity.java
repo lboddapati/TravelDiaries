@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class AddPhotoNoteActivity extends Activity {
+    //TODO: Save photos to phone as well.
     static final int REQUEST_IMAGE_CAPTURE = 1;
     Intent returnIntent;
     Bundle bundle;
@@ -45,14 +46,14 @@ public class AddPhotoNoteActivity extends Activity {
     ImageView imagePreview;
     EditText imageCaption;
     int selected;
-    String tripId;
+    String tripname;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         returnIntent = getIntent();
-        tripId = returnIntent.getStringExtra("tripId");
+        tripname = returnIntent.getStringExtra("tripname");
         photos = new ArrayList<Bitmap>();
         notes = new ArrayList<String>();
 
@@ -91,12 +92,11 @@ public class AddPhotoNoteActivity extends Activity {
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*Bundle extras = new Bundle();
-                extras.putParcelableArrayList("photos", photos);
-                extras.putStringArrayList("notes", notes);
-                returnIntent.putExtras(extras);*/
+                //Bundle extras = new Bundle();
+                //extras.putStringArrayList("imageObjectIds", imageObjectIds);
+                //returnIntent.putExtras(extras);
                 //setResult(RESULT_OK, returnIntent);
-                if(uploadImagesToCloud()) {
+                if(saveImagesInLocalDataStore()) {
                     Toast.makeText(AddPhotoNoteActivity.this, photos.size() + " Photos Added!", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(AddPhotoNoteActivity.this, "Error:: Photos Upload Failed!", Toast.LENGTH_SHORT).show();
@@ -177,8 +177,8 @@ public class AddPhotoNoteActivity extends Activity {
         }
     }
 
-    private boolean uploadImagesToCloud() {
-        Boolean uploadSuccess;
+    private boolean saveImagesInLocalDataStore() {
+        Boolean success;
 
         //ParseGeoPoint geoPoint = getCurrentLocation();
         final ParseGeoPoint geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
@@ -188,11 +188,11 @@ public class AddPhotoNoteActivity extends Activity {
                 photos.get(i).compress(Bitmap.CompressFormat.JPEG, 100, byteStream);
                 byte[] data = byteStream.toByteArray();
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                String imageFileName = tripId +"_image_"+ timeStamp +"_"+ i +".jpeg";
+                final String imageFileName = tripname +"_image_"+ timeStamp +"_"+ i +".jpeg";
                 final ParseFile parseImageFile = new ParseFile(imageFileName, data);
                 final String caption = notes.get(i);
 
-                parseImageFile.saveInBackground(new SaveCallback() {
+                /*parseImageFile.saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {
                         if (e != null) {
@@ -215,14 +215,26 @@ public class AddPhotoNoteActivity extends Activity {
                             });
                         }
                     }
-                });
+                });*/
+
+                try {
+                    parseImageFile.save();
+                    final ParseObject imageObject = new ParseObject("TripPhotoNote");
+                    imageObject.put("photo", parseImageFile);
+                    imageObject.put("note", caption);
+                    imageObject.put("location", geoPoint);
+                    imageObject.pin(tripname);
+                    Log.d("PINNING IMAGES", tripname+" - "+imageFileName+" pinned");
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
-            uploadSuccess = true;
+            success = true;
         } else {
             //TODO: Prompt for entering location
-            uploadSuccess = false;
+            success = false;
         }
-        return  uploadSuccess;
+        return success;
     }
 
     private ParseGeoPoint getCurrentLocation() {

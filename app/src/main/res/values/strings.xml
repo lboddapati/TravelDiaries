@@ -13,5 +13,6 @@
     <string name="title_activity_maps">Map</string>
     <string name="action_new_trip">New Trip</string>
     <string name="title_activity_my_photos">MyPhotos</string>
+    <string name="action_cancel_trip">Cancel</string>
 
 </resources>
