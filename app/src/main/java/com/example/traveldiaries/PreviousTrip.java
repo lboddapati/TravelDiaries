@@ -114,6 +114,11 @@ public class PreviousTrip extends Activity {
             //TODO: Change this to build new trip activity
             Intent buildNewTrip = new Intent(PreviousTrip.this, MapTripActivity.class);
             startActivity(buildNewTrip);
+        } else if (id == R.id.action_sign_out) {
+            user.logOutInBackground();
+            Intent loginIntent = new Intent(PreviousTrip.this, LoginActivity.class);
+            startActivity(loginIntent);
+            finish();
         }
 
         return super.onOptionsItemSelected(item);

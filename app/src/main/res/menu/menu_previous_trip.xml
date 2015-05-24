@@ -4,4 +4,6 @@
     tools:context="com.example.traveldiaries.PreviousTrip">
     <item android:id="@+id/action_new_trip" android:title="@string/action_new_trip"
         android:orderInCategory="100" app:showAsAction="always" android:icon="@android:drawable/ic_input_add"/>
+    <item android:id="@+id/action_sign_out" android:title="@string/action_sign_out"
+        android:orderInCategory="101" app:showAsAction="never"/>
 </menu>

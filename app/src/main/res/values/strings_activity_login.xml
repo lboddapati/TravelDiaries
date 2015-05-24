@@ -1,13 +1,17 @@
 <resources>
 
     <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
+    <string name="prompt_username">Username</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_up">Create Account</string>
+    <string name="action_sign_out">Sign Out</string>
 
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_invalid_username">Username cannot have spaces</string>
+    <string name="error_invalid_password">Password must be atleast 5 chars long and must not contain spaces</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
+    <string name="error_incorrect_username">Incorrect Username. Try again</string>
+    <string name="error_username_taken">Username already taken!</string>
+    <string name="error_incorrect_username_or_password">Incorrect username and/or password</string>
 </resources>
