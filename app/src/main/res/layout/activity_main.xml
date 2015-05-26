@@ -1,12 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.example.traveldiaries.ParseTestActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:id="@+id/main_layout">
 
-    <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tourist"
+        android:id="@+id/chk_tourist"
+        android:checked="false"
+        android:layout_below="@+id/autoCompleteTextView_end"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Restaurants"
+        android:id="@+id/chk_restaurants"
+        android:checked="false"
+        android:layout_alignTop="@+id/chk_tourist"
+        android:layout_toEndOf="@+id/chk_tourist"
+        android:layout_toRightOf="@+id/chk_tourist"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bars"
+        android:id="@+id/chk_bars"
+        android:checked="false"
+        android:layout_alignTop="@+id/chk_restaurants"
+        android:layout_toEndOf="@+id/chk_restaurants"
+        android:layout_toRightOf="@+id/chk_restaurants"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Find Places"
+        android:id="@+id/btn_find"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="161dp"
+        android:layout_alignParentLeft="true"/>
+
+    <com.example.tonia.projecttraveldiaries.CustomAutoCompleteTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/autoCompleteTextView_start"
+        android:layout_alignParentTop="true"
+        android:hint="@string/From"
+        android:layout_alignParentLeft="true"
+        android:layout_toStartOf="@+id/chk_bars"
+        android:layout_alignRight="@+id/autoCompleteTextView_end"
+        android:layout_toLeftOf="@+id/chk_bars"
+         />
+
+
+
+    <com.example.tonia.projecttraveldiaries.CustomAutoCompleteTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/autoCompleteTextView_end"
+        android:layout_below="@+id/autoCompleteTextView_start"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="92dp"
+        android:layout_alignRight="@+id/chk_bars" />
+
+    <fragment
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:name="com.google.android.gms.maps.MapFragment"
+        android:id="@+id/map"
+        class="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_below="@+id/chk_tourist"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="54dp" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView2"
+        android:layout_below="@+id/autoCompleteTextView_start"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_above="@+id/btn_getRoute" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="get route"
+        android:id="@+id/btn_getRoute"
+        android:layout_above="@+id/chk_bars"
+        android:layout_toEndOf="@+id/chk_bars"
+        android:layout_toRightOf="@+id/chk_bars"/>
 
 </RelativeLayout>

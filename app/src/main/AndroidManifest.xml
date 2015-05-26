@@ -71,6 +71,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.traveldiaries.MapsActivity" />
         </activity>
+        <activity android:name=".routeActivity"
+            android:label="Route"> </activity>
     </application>
 
 </manifest>
