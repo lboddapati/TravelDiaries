@@ -28,26 +28,32 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public abstract class MapActivity extends FragmentActivity {
 
     protected GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    protected JSONObject directionsJSONObject;
-    protected ArrayList<LatLng> places;
-    protected JSONObject placesJSON;
+    //protected JSONObject directionsJSONObject;
+    //protected ArrayList<LatLng> places;
+    //protected JSONObject placesJSON;
     protected int layoutResID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        placesJSON = new JSONObject();  //TODO: Replace with actual places JSON object; passed through intent
-        places = new ArrayList<LatLng>();   //TODO: Replace with actual places.
-        places.add(new LatLng(37.258881, -122.032913));
+        //placesJSON = new JSONObject();
+        //places = new ArrayList<LatLng>();   //TODO: Replace with actual places.
+        /*places.add(new LatLng(37.258881, -122.032913));
         places.add(new LatLng(37.270220, -122.015403));
         places.add(new LatLng(37.291732, -122.032398));
         places.add(new LatLng(37.287362, -121.944679));
         places.add(new LatLng(37.240092, -121.960987));
+        places.add(new LatLng(37.281086, -122.026335));
+        places.add(new LatLng(37.260458, -122.029596));
+        places.add(new LatLng(37.296109, -122.029596));
+        places.add(new LatLng(37.325054, -121.867891));
+        places.add(new LatLng(37.285183, -121.939989));*/
 
 
         setContentView(layoutResID);
@@ -81,15 +87,17 @@ public abstract class MapActivity extends FragmentActivity {
             // Try to obtain the map from the SupportMapFragment.
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
-            // Check if we were successful in obtaining the map.
+            /*// Check if we were successful in obtaining the map.
             if (mMap != null) {
                 setUpMap();
-            }
+            }*/
         }
     }
 
-    protected void setUpMap() {
+    /*protected void setUpMap() {
+    }*/
 
+    protected JSONObject getRoute(ArrayList<LatLng> places) {
         for(int i=0; i< places.size(); i++) {
             mMap.addMarker(new MarkerOptions().position(places.get(i)).title("Place "+i));
         }
@@ -108,8 +116,7 @@ public abstract class MapActivity extends FragmentActivity {
         String output = "json";
         String mode = "mode=driving";
         String params = origin+ "&"+ dest+ "&"+ sensor +"&"+ units +"&"+ mode +"&"+ waypoints;
-        String url = "https://maps.googleapis.com/maps/api/directions/"
-                + output + "?" + params;
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + params;
 
         try {
             HttpClient httpClient = new DefaultHttpClient();
@@ -121,14 +128,16 @@ public abstract class MapActivity extends FragmentActivity {
                 throw new RuntimeException("Failed : HTTP error code : "
                         + response.getStatusLine().getStatusCode());
             } else {
-                directionsJSONObject = new JSONObject(EntityUtils.toString(response.getEntity()));
-                drawRoute(directionsJSONObject.getJSONArray("routes").getJSONObject(0));
+                JSONObject result = new JSONObject(EntityUtils.toString(response.getEntity()));
+                //drawRoute(result.getJSONArray("routes").getJSONObject(0));
+                return result.getJSONArray("routes").getJSONObject(0);
             }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        return null;
 
     }
 
