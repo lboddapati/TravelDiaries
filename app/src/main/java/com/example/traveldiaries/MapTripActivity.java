@@ -130,8 +130,9 @@ public class MapTripActivity extends MapActivity {
         trip.put("route", route);
         //trip.saveInBackground();
         trip.pinInBackground();
+        drawMarkers(latLngs);
         drawRoute(route);
-        displayDirections(route, directionsListView);
+        displayDirections(route, directionsListView, names);
 
         addPicture.setOnClickListener(new View.OnClickListener() {
             @Override

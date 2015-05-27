@@ -15,6 +15,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 /**
  * Created by lasyaboddapati on 5/10/15.
  */
@@ -22,9 +24,11 @@ public class DirectionsExpandableListAdapter extends BaseExpandableListAdapter {
     private Context context;
     //private JSONObject route;
     private JSONArray legs;
+    private ArrayList<String> placesNames;
 
-    public DirectionsExpandableListAdapter(Context context, JSONObject route) {
+    public DirectionsExpandableListAdapter(Context context, JSONObject route, ArrayList<String> placesNames) {
         this.context = context;
+        this.placesNames = placesNames;
         //this.route = route;
         try {
             this.legs = route.getJSONArray("legs");
@@ -98,13 +102,14 @@ public class DirectionsExpandableListAdapter extends BaseExpandableListAdapter {
         TextView legHeader = (TextView) convertView.findViewById(R.id.legHeader);
         TextView  legDetails = (TextView) convertView.findViewById(R.id.legDetails);
         try {
-            String startAddr = header.getString("start_address");
-            String endAddr = header.getString("end_address");
+            //String startAddr = header.getString("start_address");
+            //String endAddr = header.getString("end_address");
             String dist = header.getJSONObject("distance").getString("text");
             String duration = header.getJSONObject("duration").getString("text");
             //String arrivalTime = "ETA: "+header.getJSONObject("arrival_time").getString("text");
-            Log.d("HEADER", "AAAAAAAAAAAAAAAAAAA"+ startAddr+" -> "+endAddr);
-            legHeader.setText(startAddr+" -> "+endAddr);
+            //Log.d("HEADER", "AAAAAAAAAAAAAAAAAAA"+ startAddr+" -> "+endAddr);
+            //legHeader.setText(startAddr+" -> "+endAddr);
+            legHeader.setText(placesNames.get(groupPosition)+" -> "+placesNames.get(groupPosition+1));
             legDetails.setText(dist+", "+duration); //+", "+arrivalTime);
         } catch (JSONException e) {
             e.printStackTrace();

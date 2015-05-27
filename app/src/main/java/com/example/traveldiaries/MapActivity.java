@@ -98,11 +98,6 @@ public abstract class MapActivity extends FragmentActivity {
     }*/
 
     protected JSONObject getRoute(ArrayList<LatLng> places) {
-        for(int i=0; i< places.size(); i++) {
-            mMap.addMarker(new MarkerOptions().position(places.get(i)).title("Place "+i));
-        }
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(places.get(0)));
 
         //TODO: Add support for waypoints > 8
         String waypoints = "waypoints=optimize:true";
@@ -147,6 +142,10 @@ public abstract class MapActivity extends FragmentActivity {
             String encodedPolylines = overviewPolyline.getString("points");
             ArrayList<LatLng> points = decodePolylines(encodedPolylines);
 
+            if(points!=null && points.size()>0) {
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
+            }
+
             for(int i = 0; i<points.size()-1;i++){
                 LatLng src= points.get(i);
                 LatLng dest= points.get(i+1);
@@ -158,6 +157,24 @@ public abstract class MapActivity extends FragmentActivity {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    protected void drawMarkers(ArrayList<LatLng> points, ArrayList<String> title) {
+        if(points!= null && points.size()>0) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
+            for (int i = 0; i < points.size(); i++) {
+                mMap.addMarker(new MarkerOptions().position(points.get(i)).title(title.get(i)));
+            }
+        }
+    }
+
+    protected void drawMarkers(ArrayList<LatLng> points) {
+        if(points!= null && points.size()>0) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
+            for (int i = 0; i < points.size(); i++) {
+                mMap.addMarker(new MarkerOptions().position(points.get(i)));
+            }
         }
     }
 
@@ -195,9 +212,9 @@ public abstract class MapActivity extends FragmentActivity {
         return polylinePoints;
     }
 
-    protected void displayDirections(JSONObject route) {
-        ExpandableListView directionsListView = (ExpandableListView) findViewById(R.id.directions);
-        DirectionsExpandableListAdapter adapter = new DirectionsExpandableListAdapter(getBaseContext(), route);
+    protected void displayDirections(JSONObject route, ExpandableListView directionsListView,ArrayList<String> placesNames) {
+        //ExpandableListView directionsListView = (ExpandableListView) findViewById(R.id.directions);
+        DirectionsExpandableListAdapter adapter = new DirectionsExpandableListAdapter(getBaseContext(), route, placesNames);
         directionsListView.setAdapter(adapter);
     }
 
