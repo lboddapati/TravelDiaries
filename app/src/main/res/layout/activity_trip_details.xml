@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/map"
-        tools:context="com.example.traveldiaries.MapsActivity"
+        tools:context="com.example.traveldiaries.ViewTripActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         map:cameraZoom="10"
         map:mapType="normal"

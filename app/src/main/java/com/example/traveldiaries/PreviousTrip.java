@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.app.Activity;
-import android.widget.Toast;
 
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -90,7 +89,7 @@ public class PreviousTrip extends Activity {
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 Intent intent;
-                intent = new Intent(PreviousTrip.this, MapsActivity.class);
+                intent = new Intent(PreviousTrip.this, ViewTripActivity.class);
                 intent.putExtra("tripId", finalTrips.get(position).getObjectId());
                 startActivity(intent);
             }

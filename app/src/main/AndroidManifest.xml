@@ -34,6 +34,9 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
+        <!--<meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_places_key"/>-->
 
         <activity
             android:name=".LoginActivity"
@@ -57,7 +60,7 @@
             android:label="@string/title_activity_add_photo_note" >
         </activity>
         <activity
-            android:name=".MapsActivity"
+            android:name=".ViewTripActivity"
             android:label="@string/title_activity_maps" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -66,13 +69,16 @@
         <activity
             android:name=".MyPhotos"
             android:label="@string/title_activity_my_photos"
-            android:parentActivityName=".MapsActivity" >
+            android:parentActivityName=".ViewTripActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.traveldiaries.MapsActivity" />
+                android:value=".ViewTripActivity" />
         </activity>
         <activity android:name=".routeActivity"
             android:label="Route"> </activity>
+        <activity android:name=".getPlacesActivity"
+            android:label="places"></activity>
+
     </application>
 
 </manifest>

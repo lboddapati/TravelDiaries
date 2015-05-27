@@ -5,12 +5,12 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/Trip_icon"
+        android:id="@+id/picture"
         android:src="@drawable/vegas" />
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/trip_name"
+        android:id="@+id/caption"
         android:gravity="center"
         android:text="Hi"
         android:textSize="20sp"
