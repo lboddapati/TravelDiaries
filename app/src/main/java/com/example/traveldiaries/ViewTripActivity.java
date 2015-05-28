@@ -2,6 +2,7 @@ package com.example.traveldiaries;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.widget.ListView;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.parse.ParseException;
+
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -49,8 +51,6 @@ public class ViewTripActivity extends MapActivity {
         names = new ArrayList<String>();
         address = new ArrayList<String>();
         latLngs = new ArrayList<LatLng>();
-
-
 
         String tripID = getIntent().getStringExtra("tripId");
         ParseQuery<ParseObject> tripQuery = ParseQuery.getQuery("Trip");

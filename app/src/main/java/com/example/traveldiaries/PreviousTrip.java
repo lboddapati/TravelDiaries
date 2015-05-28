@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.app.Activity;
-import android.widget.Toast;
 
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -112,7 +111,7 @@ public class PreviousTrip extends Activity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_new_trip) {
             //TODO: Change this to build new trip activity
-            Intent buildNewTrip = new Intent(PreviousTrip.this, MapTripActivity.class);
+            Intent buildNewTrip = new Intent(PreviousTrip.this, getPlacesActivity.class);
             startActivity(buildNewTrip);
         } else if (id == R.id.action_sign_out) {
             //user.logOutInBackground();

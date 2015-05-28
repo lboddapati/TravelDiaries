@@ -6,6 +6,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.apache.http.HttpResponse;
@@ -38,18 +39,22 @@ public class MapHelperClass {
 
     public static JSONObject getRoute(ArrayList<LatLng> places) {
 
-        //TODO: Add support for waypoints > 8
-        String waypoints = "waypoints=optimize:true";
-        for(int i=1; i<places.size()-1; i++) {
-            waypoints = waypoints + "%7C" + places.get(i).latitude + "," + places.get(i).longitude;
-        }
         String origin = "origin="+places.get(0).latitude+","+places.get(0).longitude;
         String dest = "destination="+places.get(places.size()-1).latitude+","+places.get(places.size()-1).longitude;
         String sensor = "sensor=false";
         String units = "units=metric";
         String output = "json";
         String mode = "mode=driving";
-        String params = origin+ "&"+ dest+ "&"+ sensor +"&"+ units +"&"+ mode +"&"+ waypoints;
+        String params = origin+ "&"+ dest+ "&"+ sensor +"&"+ units +"&"+ mode ;
+
+        //TODO: Add support for waypoints > 8
+        if(places.size()>2) {
+            String waypoints = "waypoints=optimize:true";
+            for (int i = 1; i < places.size() - 1; i++) {
+                waypoints = waypoints + "%7C" + places.get(i).latitude + "," + places.get(i).longitude;
+            }
+            params+="&"+ waypoints;
+        }
         String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + params;
 
         try {
@@ -75,11 +80,15 @@ public class MapHelperClass {
 
     }
 
-    protected void drawRoute(JSONObject route, GoogleMap mMap) {
-        try {
+   public static ArrayList<Polyline> drawRoute(JSONObject route, GoogleMap mMap) {
+       ArrayList<Polyline> polylines = new ArrayList<Polyline>();
+
+       try {
+
             JSONObject overviewPolyline = route.getJSONObject("overview_polyline");
             String encodedPolylines = overviewPolyline.getString("points");
             ArrayList<LatLng> points = decodePolylines(encodedPolylines);
+
 
             if(points!=null && points.size()>0) {
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
@@ -88,18 +97,20 @@ public class MapHelperClass {
             for(int i = 0; i<points.size()-1;i++){
                 LatLng src= points.get(i);
                 LatLng dest= points.get(i+1);
-                mMap.addPolyline(new PolylineOptions()
+                Polyline line = mMap.addPolyline(new PolylineOptions()
                         .add(new LatLng(src.latitude, src.longitude), new LatLng(dest.latitude, dest.longitude))
                         .width(5)
                         .color(Color.BLUE)
                         .geodesic(true));
+                polylines.add(line);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+       return polylines;
     }
 
-    protected void drawMarkers(ArrayList<LatLng> points, ArrayList<String> title, GoogleMap mMap) {
+    public static void drawMarkers(ArrayList<LatLng> points, ArrayList<String> title, GoogleMap mMap) {
         if(points!= null && points.size()>0) {
             mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
             for (int i = 0; i < points.size(); i++) {
@@ -108,7 +119,7 @@ public class MapHelperClass {
         }
     }
 
-    protected void drawMarkers(ArrayList<LatLng> points, GoogleMap mMap) {
+    public static void drawMarkers(ArrayList<LatLng> points, GoogleMap mMap) {
         if(points!= null && points.size()>0) {
             mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
             for (int i = 0; i < points.size(); i++) {
@@ -117,7 +128,7 @@ public class MapHelperClass {
         }
     }
 
-    protected ArrayList<LatLng> decodePolylines(String encodedPolylines) {
+    public static ArrayList<LatLng> decodePolylines(String encodedPolylines) {
         int N = encodedPolylines.length();
         int lat = 0, lng = 0;
         ArrayList<LatLng> polylinePoints = new ArrayList<LatLng>();

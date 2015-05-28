@@ -49,8 +49,6 @@ public class PlaceJSONParser {
             place.put("longitude", longitude);
             placesList.add(place);
 
-
-
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -14,6 +14,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -46,6 +47,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -70,6 +72,13 @@ public class getPlacesActivity extends FragmentActivity {
     LinearLayout linearLayout;
     Button btn_getRoute;
     ArrayList<LatLng> waypoints;
+    int countWaypoints =0;
+    protected JSONObject routesJSON = new JSONObject();
+    ArrayList<LatLng> places = new ArrayList<LatLng>();
+    ArrayList<LatLng> points = new ArrayList<LatLng>();
+    ArrayList<Polyline> polylines = new ArrayList<Polyline>();
+    ArrayList<String> selectedPlacesNames = new ArrayList<String>();
+    ArrayList<String> selectedPlacesAddress = new ArrayList<String>();
 
     boolean restaurant = false;
     boolean tourist = false;
@@ -111,10 +120,16 @@ public class getPlacesActivity extends FragmentActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
         btn_getRoute = (Button) findViewById(R.id.btn_getRoute);
         atvPlaces_start = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_start);
         atvPlaces_end = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_end);
         btn_getRoute.setVisibility(View.INVISIBLE);
+        waypoints = new ArrayList<LatLng>();
 
         // Add textview 1
         TextView textView1 = new TextView(this);
@@ -182,7 +197,7 @@ public class getPlacesActivity extends FragmentActivity {
 
                 HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                 System.out.println(hm.get("place_id") + "Place");
-                FunctionLatLong(hm.get("place_id"));
+                FunctionLatLong_end(hm.get("place_id"));
             }
         });
 
@@ -226,30 +241,23 @@ public class getPlacesActivity extends FragmentActivity {
                 public void onClick(View v) {
 
                     btn_getRoute.setVisibility(View.VISIBLE);
-                    btnFind.setVisibility(View.INVISIBLE);
                     fragment.getView().setVisibility(v.VISIBLE);
 
-                    StringBuilder type = new StringBuilder("");
-                    if (restaurant)
-                        type.append("&types=restaurant");
-                    if (bars)
-                        type.append("&types=bar");
-                    if (tourist)
-                        type.append("&types=zoo");
-                    final String YOUR_API_KEY = "AIzaSyCgPTOVtLLdvJYWro4NJWeuUcEtQLwKc2w";
 
-                    StringBuilder sb = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-                    sb.append("location=" + mLatitude_start + "," + mLongitude_start);
-                    sb.append("&radius=5000");
-                    sb.append("&type=" + type);
-                    sb.append("&sensor=true");
-                    sb.append("&key=" + YOUR_API_KEY);
+                    getPlaceTypes placeTypes = new getPlaceTypes();
+                    setParameters(mLatitude_start, mLongitude_start, mLatitude_end, mLongitude_end);
+                    //routesJSON = placeTypes.getRoute(places);
+                    routesJSON = MapHelperClass.getRoute(places);
+                    JSONObject overviewPolyline = null;
+                    try {
+                        overviewPolyline = routesJSON.getJSONObject("overview_polyline");
+                        String encodedPolylines = overviewPolyline.getString("points");
+                        points = MapHelperClass.decodePolylines(encodedPolylines);
+                        searchPlaceTypes(points);
 
-                    // Creating a new non-ui thread task to download json data
-                    PlacesTask placesTask = new PlacesTask();
-
-                    // Invokes the "doInBackground()" method of the class PlaceTask
-                    placesTask.execute(sb.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
                 }
             });
@@ -279,25 +287,85 @@ public class getPlacesActivity extends FragmentActivity {
 
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), routeActivity.class);
-                intent.putExtra("latitude_start",mLatitude_start);
-                /*intent.putExtra("longitude_start",mLongitude_start);
-                intent.putExtra("latitude_end",mLatitude_end);
-                intent.putExtra("longitude_end",mLongitude_end);
-                intent.putExtra("waypointsList",waypoints);*/
-                startActivity(intent);
+                /*routeActivity activity = new routeActivity();
+                //passing paremeters to route activity
+                activity.setRouteParameters(waypoints, mLatitude_start, mLongitude_start, mLatitude_end, mLongitude_end);
 
+                //Starting roue activity
+                Intent intent = new Intent(getApplicationContext(), routeActivity.class);
+                intent.putParcelableArrayListExtra("waypoints",waypoints);
+                startActivity(intent);*/
+                Intent intent = new Intent(getApplicationContext(), MapTripActivity.class);
+                intent.putParcelableArrayListExtra("latLngs", places);
+                intent.putStringArrayListExtra("names", selectedPlacesNames);
+                intent.putStringArrayListExtra("address", selectedPlacesAddress);
+                startActivity(intent);
             }
 
         });
+    }
 
+    public void searchPlaceTypes(ArrayList<LatLng> points){
+        final String YOUR_API_KEY = "AIzaSyAc5MbJJkhChz82RcQ5Feesa2GmM1YAoWA";
+        StringBuilder type = new StringBuilder("");
+        if (restaurant)
+            type.append("&types=restaurant");
+        if (bars)
+            type.append("&types=bar");
+        if (tourist)
+            type.append("&types=zoo");
+        int size = points.size()/20;
+        int i=0;
+        while(i<points.size()){
+
+            LatLng src = points.get(i);
+            StringBuilder sb = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+            sb.append("location=" + src.latitude + "," + src.longitude);
+            sb.append("&radius=2000");
+            sb.append("&type=" + type);
+            sb.append("&sensor=true");
+            sb.append("&key=" + YOUR_API_KEY);
+
+            // Creating a new non-ui thread task to download json data
+            PlacesTask placesTask = new PlacesTask();
+
+            // Invokes the "doInBackground()" method of the class PlaceTask
+            placesTask.execute(sb.toString());
+            i+=size;
+
+        }
+        // to get the last point if skipped.
+        if((i-size)<points.size()-1 ){
+            LatLng src = points.get(points.size()-1);
+            StringBuilder sb = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+            sb.append("location=" + src.latitude + "," + src.longitude);
+            sb.append("&radius=2000");
+            sb.append("&type=" + type);
+            sb.append("&sensor=true");
+            sb.append("&key=" + YOUR_API_KEY);
+
+            // Creating a new non-ui thread task to download json data
+            PlacesTask placesTask = new PlacesTask();
+
+            // Invokes the "doInBackground()" method of the class PlaceTask
+            placesTask.execute(sb.toString());
+
+        }
+    }
+    public void setParameters(Double lat_start, Double long_start,
+                                     Double lat_end,Double long_end) {
+        System.out.println("In set");
+
+        places.add(new LatLng(lat_start, long_start));
+        places.add(new LatLng(lat_end, long_end));
+        System.out.println(places);
     }
 
     /**
-     *A method to get the Latitude and Logitude from Place ID
+     *A method to get the Latitude and Logitude of orgin from Place ID
      */
     public void FunctionLatLong(String PlaceID){
-        final String YOUR_API_KEY = "AIzaSyCgPTOVtLLdvJYWro4NJWeuUcEtQLwKc2w";
+        final String YOUR_API_KEY = "AIzaSyAc5MbJJkhChz82RcQ5Feesa2GmM1YAoWA";
         StringBuilder sb = new StringBuilder("https://maps.googleapis.com/maps/api/place/details/json?");
         sb.append("&placeid="+PlaceID);
         sb.append("&key=" + YOUR_API_KEY);
@@ -306,7 +374,6 @@ public class getPlacesActivity extends FragmentActivity {
 
         // Invokes the "doInBackground()" method of the class PlaceTask
         latLongTask.execute(sb.toString());
-
 
     }
 
@@ -369,6 +436,81 @@ public class getPlacesActivity extends FragmentActivity {
         }
     }
 
+    /**
+     *A method to get the Latitude and Logitude of detination from Place ID
+     */
+    public void FunctionLatLong_end(String PlaceID){
+        final String YOUR_API_KEY = "AIzaSyAc5MbJJkhChz82RcQ5Feesa2GmM1YAoWA";
+        StringBuilder sb = new StringBuilder("https://maps.googleapis.com/maps/api/place/details/json?");
+        sb.append("&placeid="+PlaceID);
+        sb.append("&key=" + YOUR_API_KEY);
+
+        getLatLongTask_end latLongTask = new getLatLongTask_end();
+
+        // Invokes the "doInBackground()" method of the class PlaceTask
+        latLongTask.execute(sb.toString());
+
+    }
+
+    private class getLatLongTask_end extends AsyncTask<String, Integer, String> {
+
+        String data = null;
+
+        // Invoked by execute() method of this object
+        @Override
+        protected String doInBackground(String... url) {
+            try {
+                data = downloadUrl(url[0]);
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
+            }
+            return data;
+        }
+
+        // Executed after the complete execution of doInBackground() method
+        @Override
+        protected void onPostExecute(String result) {
+            parserLatLongTask_end LatLongparser = new parserLatLongTask_end();
+
+            // Start parsing the Google places in JSON format
+            // Invokes the "doInBackground()" method of the class ParseTask
+            LatLongparser.execute(result);
+        }
+
+    }
+    private class parserLatLongTask_end extends AsyncTask<String, Integer, List<HashMap<String, Double>>> {
+
+        JSONObject jObject;
+
+        // Invoked by execute() method of this object
+        @Override
+        protected List<HashMap<String, Double>> doInBackground(String... jsonData) {
+
+            List<HashMap<String, Double>> latLong = null;
+            PlaceJSONParser placeJsonParser = new PlaceJSONParser();
+
+            try {
+                jObject = new JSONObject(jsonData[0]);
+                System.out.println("Inside parse task");
+                /** Getting the parsed data as a List construct */
+                latLong = placeJsonParser.parseLatLong(jObject);
+
+            } catch (Exception e) {
+                Log.d("Exception", e.toString());
+            }
+            System.out.println("End place"+latLong);
+            return latLong;
+        }
+
+        @Override
+        protected void onPostExecute(List<HashMap<String, Double>> result) {
+
+            mLatitude_end = result.get(0).get("latitude");
+            mLongitude_end = result.get(0).get("longitude");
+
+        }
+    }
+
 
     /**
      * A method to download json data from url
@@ -420,8 +562,8 @@ public class getPlacesActivity extends FragmentActivity {
             // For storing data from web service
             String data = "";
 
-            // Obtain browser key from https://code.google.com/apis/console
-            String key = "key=AIzaSyCgPTOVtLLdvJYWro4NJWeuUcEtQLwKc2w";
+            //Obtain browser key from https://code.google.com/apis/console
+            String key = "key=AIzaSyAc5MbJJkhChz82RcQ5Feesa2GmM1YAoWA";
 
             String input="";
 
@@ -569,8 +711,6 @@ public class getPlacesActivity extends FragmentActivity {
         // Executed after the complete execution of doInBackground() method
         protected void onPostExecute(List<HashMap<String, String>> list) {
 
-
-            mGoogleMap.clear();
             for(int i=0;i<list.size();i++){
                 // Clears all the existing markers
 
@@ -608,19 +748,31 @@ public class getPlacesActivity extends FragmentActivity {
 
 
             }
+
             mGoogleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 @Override
                 public void onInfoWindowClick(Marker marker) {
                     System.out.println("Adding a text");
                         /*Intent intent = new Intent(MapActivity.this, OtherActivity.class);
                         startActivity(intent);*/
-                    waypoints= new ArrayList<LatLng>();
+                    countWaypoints++;
                     listItems.add(marker.getTitle());
                     System.out.println(marker.getPosition());
 
                     LatLng point = marker.getPosition();
+                    String name = marker.getTitle();
                     System.out.println(point);
-                    waypoints.add(point);
+
+                    for(Polyline line: polylines)
+                            line.remove();
+                    //waypoints.add((countWaypoints - 1), point);
+                    places.add(countWaypoints, point);
+                    selectedPlacesNames.add(marker.getTitle().split(":")[0]);
+                    selectedPlacesAddress.add(marker.getTitle().split(":")[1]);
+
+                    routesJSON = MapHelperClass.getRoute(places);
+                    polylines = MapHelperClass.drawRoute(routesJSON,mGoogleMap);
+                    MapHelperClass.drawMarkers(places,mGoogleMap);
 
                     adapter.notifyDataSetChanged();
 
