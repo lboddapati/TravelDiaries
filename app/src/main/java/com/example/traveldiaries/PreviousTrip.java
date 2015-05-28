@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.app.Activity;
+import android.widget.Toast;
 
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -114,9 +115,12 @@ public class PreviousTrip extends Activity {
             Intent buildNewTrip = new Intent(PreviousTrip.this, MapTripActivity.class);
             startActivity(buildNewTrip);
         } else if (id == R.id.action_sign_out) {
-            user.logOutInBackground();
+            //user.logOutInBackground();
+            user.logOut();
+            //Toast.makeText(this, "Signing out", Toast.LENGTH_SHORT).show();
             Intent loginIntent = new Intent(PreviousTrip.this, LoginActivity.class);
             startActivity(loginIntent);
+            //Toast.makeText(this, "Starting login", Toast.LENGTH_SHORT).show();
             finish();
         }
 

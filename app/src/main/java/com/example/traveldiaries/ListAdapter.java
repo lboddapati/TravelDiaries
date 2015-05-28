@@ -19,9 +19,9 @@ public class ListAdapter extends BaseAdapter {
 
     private Context mContext;
     private ArrayList<String> names;
-    private ArrayList<String> photos;
+    private ArrayList<Integer> photos;
 
-    public ListAdapter(Context c,ArrayList<String> names, ArrayList<String> photos) {
+    public ListAdapter(Context c,ArrayList<String> names, ArrayList<Integer> photos) {
         this.mContext = c;
         //this.thumbnails=places;
         this.names=names;
@@ -51,10 +51,25 @@ public class ListAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.places_list, null);
         }
         TextView PlaceHeader = (TextView) convertView.findViewById(R.id.PlaceHeader);
-        TextView  Pics = (TextView) convertView.findViewById(R.id.Pics);
+        TextView  PicsCount = (TextView) convertView.findViewById(R.id.PicsCount);
         PlaceHeader.setText(names.get(position));
-        Pics.setText(photos.get(position));
+        int count = photos.get(position);
+        if(count > 0) {
+            PicsCount.setText(photos.get(position) + " Photos");
+        } else {
+            PicsCount.setText("");
+        }
 
         return convertView;
+    }
+
+    @Override
+    public boolean areAllItemsEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled(int position) {
+        return photos.get(position)!=0;
     }
 }

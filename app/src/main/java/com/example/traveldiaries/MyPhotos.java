@@ -29,40 +29,35 @@ public class MyPhotos extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_photos);
 
-        final ArrayList<Bitmap> pics_icons = new ArrayList<Bitmap>();
-        Bitmap sf = BitmapFactory.decodeResource(getResources(), R.drawable.sf);
+        final ArrayList<Bitmap> pics_icons;// = new ArrayList<Bitmap>();
+        /*Bitmap sf = BitmapFactory.decodeResource(getResources(), R.drawable.sf);
         Bitmap vegas = BitmapFactory.decodeResource(getResources(), R.drawable.vegas);
         Bitmap sunlight = BitmapFactory.decodeResource(getResources(), R.drawable.sunlight);
         final Bitmap image1 = BitmapFactory.decodeResource(getResources(), R.drawable.image1);
         pics_icons.add(sf);
         pics_icons.add(vegas);
         pics_icons.add(sunlight);
-        pics_icons.add(image1);
-        final ArrayList<String> pic_notes=new ArrayList<String>();
-        pic_notes.add("IN SF");
+        pics_icons.add(image1);*/
+        final ArrayList<String> pic_notes;//=new ArrayList<String>();
+        /*pic_notes.add("IN SF");
         pic_notes.add("IN VEGAS");
         pic_notes.add("IT'S HOT");
-        pic_notes.add("KITTY CAT");
+        pic_notes.add("KITTY CAT");*/
+
+        Intent intent = getIntent();
+        pics_icons = intent.getParcelableArrayListExtra("photos");
+        pic_notes = intent.getStringArrayListExtra("notes");
+
         GridView gridview = (GridView) findViewById(R.id.gridview);
         gridview.setAdapter(new ImageAdapter(this, pics_icons));
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-       //         Intent intent;
-        //        intent = new Intent(MyPhotos.this, DisplayPhoto.class);
-        //        startActivity(intent);
-                //Dialog image_dialog= new Dialog(MyPhotos.this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-                LayoutInflater inflater =  (LayoutInflater) MyPhotos.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                Dialog image_dialog= new Dialog(MyPhotos.this);
+                Dialog image_dialog= new Dialog(MyPhotos.this,android.R.style.Theme_Black_NoTitleBar_Fullscreen);
                 image_dialog.setContentView(R.layout.places_pics);
-                //View view1 = inflater.inflate(R.layout.places_pics,null);
-                ImageView image1= (ImageView) image_dialog.findViewById(R.id.Trip_icon);
+                ImageView image1= (ImageView) image_dialog.findViewById(R.id.picture);
                 image1.setImageBitmap((Bitmap) pics_icons.get(position));
-                TextView text1=(TextView) image_dialog.findViewById(R.id.trip_name);
+                TextView text1=(TextView) image_dialog.findViewById(R.id.caption);
                 text1.setText(pic_notes.get(position));
-                //image1.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                text1.setElevation(12);
-                //text1.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                //image_dialog.setContentView(image1);
                 image_dialog.show();
             }
         });

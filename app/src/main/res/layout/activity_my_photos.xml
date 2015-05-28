@@ -12,7 +12,7 @@
         android:layout_below="@id/caption"
         android:layout_marginTop="20dp"
         android:id="@+id/gridview"
-        android:numColumns="auto_fit"
+        android:numColumns="5"
         android:horizontalSpacing="10dp"
         android:verticalSpacing="10dp"
         android:layout_centerHorizontal="true"

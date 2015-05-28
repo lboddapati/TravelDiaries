@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="5 Photos"
-        android:id="@+id/Pics"
+        android:id="@+id/PicsCount"
         android:layout_below="@id/PlaceHeader"
         android:layout_alignParentRight="true" />
 </RelativeLayout>

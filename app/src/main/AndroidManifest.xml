@@ -68,11 +68,11 @@
         </activity>
         <activity
             android:name=".MyPhotos"
-            android:label="@string/title_activity_my_photos"
-            android:parentActivityName=".ViewTripActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ViewTripActivity" />
+            android:label="@string/title_activity_my_photos" >
+        <!--android:parentActivityName=".ViewTripActivity" >
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".ViewTripActivity" />-->
         </activity>
         <activity android:name=".routeActivity"
             android:label="Route"> </activity>

@@ -47,7 +47,7 @@
         android:layout_marginBottom="161dp"
         android:layout_alignParentLeft="true"/>
 
-    <com.example.tonia.projecttraveldiaries.CustomAutoCompleteTextView
+    <com.example.traveldiaries.CustomAutoCompleteTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/autoCompleteTextView_start"
@@ -56,12 +56,11 @@
         android:layout_alignParentLeft="true"
         android:layout_toStartOf="@+id/chk_bars"
         android:layout_alignRight="@+id/autoCompleteTextView_end"
-        android:layout_toLeftOf="@+id/chk_bars"
-         />
+        android:layout_toLeftOf="@+id/chk_bars" />
 
 
 
-    <com.example.tonia.projecttraveldiaries.CustomAutoCompleteTextView
+    <com.example.traveldiaries.CustomAutoCompleteTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/autoCompleteTextView_end"
@@ -72,10 +71,13 @@
         android:layout_alignRight="@+id/chk_bars" />
 
     <fragment
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:name="com.google.android.gms.maps.MapFragment"
         android:id="@+id/map"
+        tools:context="com.example.traveldiaries.getPlacesActivity"
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_below="@+id/chk_tourist"
         android:layout_alignParentLeft="true"
