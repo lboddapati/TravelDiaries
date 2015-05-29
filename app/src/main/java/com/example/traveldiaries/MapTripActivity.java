@@ -2,6 +2,8 @@ package com.example.traveldiaries;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,6 +13,8 @@ import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
@@ -28,95 +32,43 @@ import org.json.JSONStringer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapTripActivity extends MapActivity {
+public class MapTripActivity extends FragmentActivity {
     //TODO 1: When back button pressed while trip is in progress, save state.
 
+    private GoogleMap mMap;
     private ParseObject trip;
     private ParseUser user;
-    //static final int REQUEST_ADD_PHOTONOTE = 0;
-    //private ArrayList<String> imageObjectIds;
     String tripname = "SomeTrip"; //TODO: Change to actual trip name;
 
-    ArrayList<String> names = new ArrayList<String>();
-    ArrayList<String> address = new ArrayList<String>();
+    ArrayList<String> names;
+    ArrayList<String> address;
     ArrayList<LatLng> latLngs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setLayoutFile(R.layout.activity_map_trip);
+        //setLayoutFile(R.layout.activity_map_trip);
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_map_trip);
+
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
+
+        setUpMapIfNeeded();
 
         user = ParseUser.getCurrentUser();
 
-        //TODO: Replace with actual places.
-        latLngs = new ArrayList<LatLng>();
-        latLngs.add(new LatLng(37.258881, -122.032913));
-        latLngs.add(new LatLng(37.270220, -122.015403));
-        latLngs.add(new LatLng(37.291732, -122.032398));
-        latLngs.add(new LatLng(37.287362, -121.944679));
-        latLngs.add(new LatLng(37.240092, -121.960987));
-        latLngs.add(new LatLng(37.281086, -122.026335));
-        latLngs.add(new LatLng(37.260458, -122.029596));
-        latLngs.add(new LatLng(37.296109, -122.029596));
-        latLngs.add(new LatLng(37.325054, -121.867891));
-        latLngs.add(new LatLng(37.285183, -121.939989));
-
-        names = new ArrayList<String>();
-        names.add("origin");
-        names.add("waypoint 1");
-        names.add("waypoint 2");
-        names.add("waypoint 3");
-        names.add("waypoint 4");
-        names.add("waypoint 5");
-        names.add("waypoint 6");
-        names.add("waypoint 7");
-        names.add("waypoint 8");
-        names.add("destination");
-
-        address = new ArrayList<String>();
-        address.add("origin address");
-        address.add("waypoint address 1");
-        address.add("waypoint address 2");
-        address.add("waypoint address 3");
-        address.add("waypoint address 4");
-        address.add("waypoint address 5");
-        address.add("waypoint address 6");
-        address.add("waypoint address 7");
-        address.add("waypoint address 8");
-        address.add("destination address");
+        Intent intent = getIntent();
+        latLngs = intent.getParcelableArrayListExtra("latLngs");
+        names = intent.getStringArrayListExtra("names");
+        address = intent.getStringArrayListExtra("address");
+        System.out.println("IN MAP TRIP ACTIVITY :: "+latLngs.size()+"::"+names.size()+"::"+address.size());
 
         final ExpandableListView directionsListView = (ExpandableListView) findViewById(R.id.directions);
         //final Button startTrip = (Button) findViewById(R.id.startTrip);
         final Button finishTrip = (Button) findViewById(R.id.finishTrip);
         final ImageButton addPicture = (ImageButton) findViewById(R.id.addPicture);
-
-        /*startTrip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startTrip.setVisibility(View.GONE);
-                finishTrip.setVisibility(View.VISIBLE);
-                addPicture.setVisibility(View.VISIBLE);
-                directionsListView.setVisibility(View.VISIBLE);
-
-                JSONObject route;
-                try {
-                    if(directionsJSONObject != null) {
-                        route = directionsJSONObject.getJSONArray("routes").getJSONObject(0);
-                        trip = new ParseObject("Trip");
-                        trip.put("tripName", tripname);
-                        trip.put("places", placesJSON);
-                        trip.put("route", route);
-                        trip.put("user", user);
-                        //trip.saveInBackground();
-                        trip.pinInBackground();
-                        displayDirections(route);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });*/
 
         trip = new ParseObject("Trip");
         trip.put("user", user);
@@ -126,21 +78,21 @@ public class MapTripActivity extends MapActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JSONObject route = getRoute(latLngs);
+        JSONObject route = MapHelperClass.getRoute(latLngs);
         trip.put("route", route);
         //trip.saveInBackground();
         trip.pinInBackground();
-        drawMarkers(latLngs);
-        drawRoute(route);
-        displayDirections(route, directionsListView, names);
+        MapHelperClass.drawMarkers(latLngs, address, mMap, null);
+        MapHelperClass.drawRoute(route, mMap);
+        //displayDirections(route, directionsListView, names);
+        DirectionsExpandableListAdapter adapter = new DirectionsExpandableListAdapter(getBaseContext(), route, names);
+        directionsListView.setAdapter(adapter);
 
         addPicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent pictureIntent = new Intent(MapTripActivity.this, AddPhotoNoteActivity.class);
-                //pictureIntent.putExtra("tripId", trip.getObjectId());
                 pictureIntent.putExtra("tripname", tripname);
-                //startActivityForResult(pictureIntent, REQUEST_ADD_PHOTONOTE, null);
                 startActivity(pictureIntent);
             }
         });
@@ -161,15 +113,6 @@ public class MapTripActivity extends MapActivity {
             }
         });
     }
-
-    /*@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_ADD_PHOTONOTE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            imageObjectIds.addAll(extras.getStringArrayList("imageObjectIds"));
-            Log.d("RESULT", "Total "+imageObjectIds.size()+" photos");
-        }
-    }*/
 
     private void uploadImagesToCloud() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("TripPhotoNote");
@@ -225,5 +168,14 @@ public class MapTripActivity extends MapActivity {
         placesJSON.put("places", placesArray);
 
         return placesJSON;
+    }
+
+    private void setUpMapIfNeeded() {
+        // Do a null check to confirm that we have not already instantiated the map.
+        if (mMap == null) {
+            // Try to obtain the map from the SupportMapFragment.
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                    .getMap();
+        }
     }
 }

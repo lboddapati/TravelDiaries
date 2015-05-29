@@ -51,7 +51,6 @@ public class PreviousTrip extends Activity {
 
             ParseQuery<ParseObject> picsQuery = ParseQuery.getQuery("TripPhotoNote");
             picsQuery.whereEqualTo("trip", trip.getObjectId());
-            //ArrayList<ParseObject> photoNotes = null;
             ParseObject photoNote = null;
             Bitmap icon = null;
             try {
@@ -70,17 +69,8 @@ public class PreviousTrip extends Activity {
                 trip_icons.add(icon);
             }
         }
-        //Toast.makeText(this, "done fetching trips", Toast.LENGTH_SHORT).show();
 
         setContentView(R.layout.activity_previous_trip);
-
-
-        //trip_names.add("sf");
-        //trip_names.add("vegas");
-        //Bitmap sf = BitmapFactory.decodeResource(getResources(), R.drawable.sf);
-        //Bitmap vegas = BitmapFactory.decodeResource(getResources(), R.drawable.vegas);
-        //trip_icons.add(sf);
-        //trip_icons.add(vegas);
 
         GridView gridview = (GridView) findViewById(R.id.gridview);
         //Toast.makeText(this, " setting adapter", Toast.LENGTH_SHORT).show();
@@ -108,16 +98,15 @@ public class PreviousTrip extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_new_trip) {
-            //TODO: Change this to build new trip activity
             Intent buildNewTrip = new Intent(PreviousTrip.this, getPlacesActivity.class);
             startActivity(buildNewTrip);
+            //finish();
         } else if (id == R.id.action_sign_out) {
-            //user.logOutInBackground();
             user.logOut();
             //Toast.makeText(this, "Signing out", Toast.LENGTH_SHORT).show();
-            Intent loginIntent = new Intent(PreviousTrip.this, LoginActivity.class);
+            //Intent loginIntent = new Intent(PreviousTrip.this, LoginActivity.class);
+            Intent loginIntent = new Intent(PreviousTrip.this, prelogin.class);
             startActivity(loginIntent);
             //Toast.makeText(this, "Starting login", Toast.LENGTH_SHORT).show();
             finish();

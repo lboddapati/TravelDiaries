@@ -6,6 +6,24 @@
     tools:context=".MainActivity"
     android:id="@+id/main_layout">
 
+    <com.example.traveldiaries.CustomAutoCompleteTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/autoCompleteTextView_start"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:hint="@string/From" />
+
+    <com.example.traveldiaries.CustomAutoCompleteTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/autoCompleteTextView_end"
+        android:layout_below="@+id/autoCompleteTextView_start"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="10dp"
+        android:hint="@string/To"/>
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -42,63 +60,39 @@
         android:layout_height="wrap_content"
         android:text="Find Places"
         android:id="@+id/btn_find"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="161dp"
-        android:layout_alignParentLeft="true"/>
+        android:layout_marginLeft="10dp"
+        android:layout_toEndOf="@+id/chk_bars"
+        android:layout_toRightOf="@+id/chk_bars"
+        android:layout_alignTop="@id/chk_bars"/>
 
-    <com.example.traveldiaries.CustomAutoCompleteTextView
+    <ListView
+        android:layout_width="250dp"
+        android:layout_height="100dp"
+        android:id="@+id/listView2"
+        android:layout_below="@+id/chk_tourist"
+        android:layout_alignStart="@id/chk_tourist"
+        android:layout_alignEnd="@id/chk_bars" />
+
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/autoCompleteTextView_start"
-        android:layout_alignParentTop="true"
-        android:hint="@string/From"
-        android:layout_alignParentLeft="true"
-        android:layout_toStartOf="@+id/chk_bars"
-        android:layout_alignRight="@+id/autoCompleteTextView_end"
-        android:layout_toLeftOf="@+id/chk_bars" />
-
-
-
-    <com.example.traveldiaries.CustomAutoCompleteTextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/autoCompleteTextView_end"
-        android:layout_below="@+id/autoCompleteTextView_start"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginTop="92dp"
-        android:layout_alignRight="@+id/chk_bars" />
+        android:text="Start Trip"
+        android:id="@+id/btn_StartTrip"
+        android:layout_alignBottom="@id/listView2"
+        android:layout_alignLeft="@id/btn_find"/>
 
     <fragment
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:name="com.google.android.gms.maps.MapFragment"
         android:id="@+id/map"
         tools:context="com.example.traveldiaries.getPlacesActivity"
         class="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_below="@+id/chk_tourist"
+        android:layout_below="@+id/listView2"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="54dp" />
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/listView2"
-        android:layout_below="@+id/autoCompleteTextView_start"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_above="@+id/btn_getRoute" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="get route"
-        android:id="@+id/btn_getRoute"
-        android:layout_above="@+id/chk_bars"
-        android:layout_toEndOf="@+id/chk_bars"
-        android:layout_toRightOf="@+id/chk_bars"/>
+        android:layout_marginTop="20dp"
+        android:layout_alignParentBottom="true"/>
 
 </RelativeLayout>

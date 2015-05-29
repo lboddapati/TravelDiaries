@@ -27,12 +27,10 @@ public class LoginActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
         if(ParseUser.getCurrentUser() != null) {
             SignedIn();
         }
-
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
         usernameView = (EditText) findViewById(R.id.username);

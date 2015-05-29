@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -84,14 +85,13 @@ public class MapHelperClass {
        ArrayList<Polyline> polylines = new ArrayList<Polyline>();
 
        try {
-
             JSONObject overviewPolyline = route.getJSONObject("overview_polyline");
             String encodedPolylines = overviewPolyline.getString("points");
             ArrayList<LatLng> points = decodePolylines(encodedPolylines);
 
-
             if(points!=null && points.size()>0) {
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
+                //mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
             }
 
             for(int i = 0; i<points.size()-1;i++){
@@ -99,8 +99,8 @@ public class MapHelperClass {
                 LatLng dest= points.get(i+1);
                 Polyline line = mMap.addPolyline(new PolylineOptions()
                         .add(new LatLng(src.latitude, src.longitude), new LatLng(dest.latitude, dest.longitude))
-                        .width(5)
-                        .color(Color.BLUE)
+                        .width(10)
+                        .color(Color.parseColor("#33CCFF"))
                         .geodesic(true));
                 polylines.add(line);
             }
@@ -110,20 +110,34 @@ public class MapHelperClass {
        return polylines;
     }
 
-    public static void drawMarkers(ArrayList<LatLng> points, ArrayList<String> title, GoogleMap mMap) {
+    public static void drawMarkers(ArrayList<LatLng> points, ArrayList<String> title, GoogleMap mMap, Float color) {
         if(points!= null && points.size()>0) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
+            //mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
+            MarkerOptions options = new MarkerOptions();
+            if(color == null) {
+                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            } else {
+                options.icon(BitmapDescriptorFactory.defaultMarker(color));
+            }
             for (int i = 0; i < points.size(); i++) {
-                mMap.addMarker(new MarkerOptions().position(points.get(i)).title(title.get(i)));
+                mMap.addMarker(options.position(points.get(i)).title(title.get(i)));
             }
         }
     }
 
-    public static void drawMarkers(ArrayList<LatLng> points, GoogleMap mMap) {
+    public static void drawMarkers(ArrayList<LatLng> points, GoogleMap mMap, Float color) {
         if(points!= null && points.size()>0) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
+            //mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
+            MarkerOptions options = new MarkerOptions();
+            if(color == null) {
+                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            } else {
+                options.icon(BitmapDescriptorFactory.defaultMarker(color));
+            }
             for (int i = 0; i < points.size(); i++) {
-                mMap.addMarker(new MarkerOptions().position(points.get(i)));
+                mMap.addMarker(options.position(points.get(i)));
             }
         }
     }

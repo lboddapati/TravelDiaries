@@ -19,13 +19,14 @@ public class ListAdapter extends BaseAdapter {
 
     private Context mContext;
     private ArrayList<String> names;
-    private ArrayList<Integer> photos;
+    private ArrayList<Integer> photosCount;
+    private ArrayList<String> address;
 
-    public ListAdapter(Context c,ArrayList<String> names, ArrayList<Integer> photos) {
+    public ListAdapter(Context c, ArrayList<String> names, ArrayList<String> address, ArrayList<Integer> photosCount) {
         this.mContext = c;
-        //this.thumbnails=places;
         this.names=names;
-        this.photos=photos;
+        this.address=address;
+        this.photosCount=photosCount;
 
     }
     @Override
@@ -51,11 +52,13 @@ public class ListAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.places_list, null);
         }
         TextView PlaceHeader = (TextView) convertView.findViewById(R.id.PlaceHeader);
+        TextView PlaceAddress = (TextView) convertView.findViewById(R.id.PlaceAddress);
         TextView  PicsCount = (TextView) convertView.findViewById(R.id.PicsCount);
         PlaceHeader.setText(names.get(position));
-        int count = photos.get(position);
+        PlaceAddress.setText(address.get(position));
+        int count = photosCount.get(position);
         if(count > 0) {
-            PicsCount.setText(photos.get(position) + " Photos");
+            PicsCount.setText(photosCount.get(position) + " Photos");
         } else {
             PicsCount.setText("");
         }
@@ -70,6 +73,6 @@ public class ListAdapter extends BaseAdapter {
 
     @Override
     public boolean isEnabled(int position) {
-        return photos.get(position)!=0;
+        return photosCount.get(position)!=0;
     }
 }

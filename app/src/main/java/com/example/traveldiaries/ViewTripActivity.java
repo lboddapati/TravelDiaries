@@ -6,11 +6,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.StrictMode;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.parse.ParseException;
 
@@ -26,8 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-//public class ViewTripActivity extends FragmentActivity {
-public class ViewTripActivity extends MapActivity {
+public class ViewTripActivity extends FragmentActivity {
     //TODO: Add option to view all pics at once
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
@@ -45,8 +47,16 @@ public class ViewTripActivity extends MapActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setLayoutFile(R.layout.activity_trip_details);
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_trip_details);
+
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
+
+        setUpMapIfNeeded();
+
 
         names = new ArrayList<String>();
         address = new ArrayList<String>();
@@ -65,25 +75,17 @@ public class ViewTripActivity extends MapActivity {
             e.printStackTrace();
         }
 
+
         parsePlacesJSON(placesJSON);
-        drawMarkers(latLngs);
-        drawRoute(route);
-
-        /*ArrayList<String> trip_places= new ArrayList<String>();
-        trip_places.add("Golden Gate Bridge");
-        trip_places.add("Pier 39");
-        ArrayList<String> trip_photos= new ArrayList<String>();
-        trip_photos.add("5 photos");
-        trip_photos.add("7 photos");*/
-        ListView listView = (ListView) findViewById(R.id.places);
-        //final ArrayList<ArrayList<ParseObject>> photonotesAtPlaces;
-
+        MapHelperClass.drawMarkers(latLngs, names, mMap, null);
+        MapHelperClass.drawRoute(route, mMap);
         initialize();
 
+        ListView listView = (ListView) findViewById(R.id.places);
 
         try {
             matchPhotosToPlaces();
-            listView.setAdapter(new ListAdapter(this, names, getPhotoCount(photosAtPlaces)));
+            listView.setAdapter(new ListAdapter(this, names, address, getPhotoCount(photosAtPlaces)));
             listView.setVisibility(View.VISIBLE);
 
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -98,7 +100,6 @@ public class ViewTripActivity extends MapActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        //setUpMapIfNeeded();
     }
 
     private void initialize() {
@@ -151,13 +152,13 @@ public class ViewTripActivity extends MapActivity {
         }
     }
 
-    private ArrayList<Integer> getPhotoCount(ArrayList<ArrayList<Bitmap>> photoNotePlaceMap) {
+    private ArrayList<Integer> getPhotoCount(ArrayList<ArrayList<Bitmap>> photosAtPlaces) {
         ArrayList<Integer> photoCount = new ArrayList<Integer>();
         for(int i=0; i<names.size(); i++) {
-            if(photoNotePlaceMap.get(i) == null) {
+            if(photosAtPlaces.size()<=i || photosAtPlaces.get(i) == null) {
                 photoCount.add(0);
             } else {
-                photoCount.add(photoNotePlaceMap.get(i).size());
+                photoCount.add(photosAtPlaces.get(i).size());
             }
         }
         return photoCount;
@@ -202,6 +203,15 @@ public class ViewTripActivity extends MapActivity {
             e.printStackTrace();
         }
 
+    }
+
+    private void setUpMapIfNeeded() {
+        // Do a null check to confirm that we have not already instantiated the map.
+        if (mMap == null) {
+            // Try to obtain the map from the SupportMapFragment.
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                    .getMap();
+        }
     }
 
 }

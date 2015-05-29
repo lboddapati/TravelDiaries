@@ -4,24 +4,16 @@ package com.example.traveldiaries;
  * Created by Tonia on 5/16/15.
  */
 import android.app.Dialog;
-import android.app.FragmentManager;
-import android.content.Context;
-import android.graphics.Color;
 import android.location.Criteria;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -29,23 +21,22 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.AutoCompleteTextView;
 import android.content.Intent;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,15 +55,19 @@ import java.util.List;
 
 public class getPlacesActivity extends FragmentActivity {
     GoogleMap mGoogleMap;
+    private String YOUR_API_KEY;
 
     AutoCompleteTextView atvPlaces_start;
     AutoCompleteTextView atvPlaces_end;
     AutocompletePlacesTask placesTask;
     AutocompleteTask autoCompleteTask;
     LinearLayout linearLayout;
-    Button btn_getRoute;
-    ArrayList<LatLng> waypoints;
-    int countWaypoints =0;
+    Button btnStartTrip;
+    Button btnFind;
+    CheckBox chk_restaurants;
+    CheckBox chk_bars;
+    CheckBox chk_tourist;
+
     protected JSONObject routesJSON = new JSONObject();
     ArrayList<LatLng> places = new ArrayList<LatLng>();
     ArrayList<LatLng> points = new ArrayList<LatLng>();
@@ -93,27 +88,24 @@ public class getPlacesActivity extends FragmentActivity {
     ArrayList<String> listItems;
     ArrayAdapter<String> adapter;
 
-    public void onCheckboxClicked(View v) {
-        boolean checked = ((CheckBox) v).isChecked();
-
-        switch (v.getId()) {
-            case R.id.chk_restaurants:
-                if (checked)
-                    restaurant = true;
-                break;
-            case R.id.chk_bars:
-                if (checked)
-                    bars = true;
-                break;
-            case R.id.chk_tourist:
-                if (checked)
-                    tourist = true;
-                break;
-            default:
-                break;
-
+    CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            switch (buttonView.getId()) {
+                case R.id.chk_bars:
+                    bars = isChecked;
+                    break;
+                case R.id.chk_restaurants:
+                    restaurant = isChecked;
+                    break;
+                case R.id.chk_tourist:
+                    tourist = isChecked;
+                    break;
+                default:
+                    break;
+            }
         }
-    }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,42 +113,44 @@ public class getPlacesActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        YOUR_API_KEY = getResources().getString(R.string.google_places_key);
+        Log.d("API_KEY", YOUR_API_KEY);
+
         if (android.os.Build.VERSION.SDK_INT > 9) {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
         }
-        btn_getRoute = (Button) findViewById(R.id.btn_getRoute);
+
+        btnStartTrip = (Button) findViewById(R.id.btn_StartTrip);
+        btnFind = (Button) findViewById(R.id.btn_find);
+        btnFind.setEnabled(false);
         atvPlaces_start = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_start);
         atvPlaces_end = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_end);
-        btn_getRoute.setVisibility(View.INVISIBLE);
-        waypoints = new ArrayList<LatLng>();
+        btnStartTrip.setVisibility(View.INVISIBLE);
+        chk_tourist = (CheckBox) findViewById(R.id.chk_tourist);
+        chk_restaurants = (CheckBox) findViewById(R.id.chk_restaurants);
+        chk_bars = (CheckBox) findViewById(R.id.chk_bars);
 
-        // Add textview 1
-        TextView textView1 = new TextView(this);
-        textView1.setText("programmatically created TextView1");
-        textView1.setTextSize(100);
+        atvPlaces_start.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                placesTask = new AutocompletePlacesTask();
+                placesTask.execute(s.toString());
+            }
 
-         atvPlaces_start.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // TODO Auto-generated method stub
+            }
 
-             @Override
-             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                 placesTask = new AutocompletePlacesTask();
-                 placesTask.execute(s.toString());
-             }
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(atvPlaces_start.getText().toString().isEmpty()) {
+                    btnFind.setEnabled(false);
+                }
+            }
+        });
 
-             @Override
-             public void beforeTextChanged(CharSequence s, int start, int count,
-                                           int after) {
-                 // TODO Auto-generated method stub
-             }
-
-             @Override
-             public void afterTextChanged(Editable s) {
-                 // TODO Auto-generated method stub
-             }
-
-
-         });
         atvPlaces_start.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int index, long id) {
@@ -166,11 +160,15 @@ public class getPlacesActivity extends FragmentActivity {
                 HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                 System.out.println(hm.get("place_id") + "Place");
                 FunctionLatLong(hm.get("place_id"));
+                if(atvPlaces_end.getText().toString().isEmpty()) {
+                    btnFind.setEnabled(false);
+                } else {
+                    btnFind.setEnabled(true);
+                }
             }
         });
 
         atvPlaces_end.addTextChangedListener(new TextWatcher() {
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 placesTask = new AutocompletePlacesTask();
@@ -178,14 +176,15 @@ public class getPlacesActivity extends FragmentActivity {
             }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count,
-                                          int after) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 // TODO Auto-generated method stub
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                // TODO Auto-generated method stub
+                if(atvPlaces_end.getText().toString().isEmpty()) {
+                    btnFind.setEnabled(false);
+                }
             }
         });
 
@@ -198,6 +197,11 @@ public class getPlacesActivity extends FragmentActivity {
                 HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                 System.out.println(hm.get("place_id") + "Place");
                 FunctionLatLong_end(hm.get("place_id"));
+                if(atvPlaces_start.getText().toString().isEmpty()) {
+                    btnFind.setEnabled(false);
+                } else {
+                    btnFind.setEnabled(true);
+                }
             }
         });
 
@@ -205,10 +209,6 @@ public class getPlacesActivity extends FragmentActivity {
         listItems = new ArrayList<String>();
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listItems);
         listView.setAdapter(adapter);
-
-        final Button btnFind;
-        // Getting reference to Find Button
-        btnFind = (Button) findViewById(R.id.btn_find);
 
         // Getting Google Play availability status
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getBaseContext());
@@ -219,35 +219,40 @@ public class getPlacesActivity extends FragmentActivity {
             Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, this, requestCode);
             dialog.show();
 
-        } else {
-
-            // Google Play Services are available
+        } else { // Google Play Services are available
 
             // Getting reference to the SupportMapFragment
-
             final SupportMapFragment fragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-            System.out.println("Fragment Visibility"+fragment.isVisible());
 
             // Getting Google Map
             mGoogleMap = fragment.getMap();
-            fragment.getView().setVisibility(View.INVISIBLE);
-
-          //  locationManager.requestLocationUpdates(provider, 20000, 0, this);
 
             // Setting click event lister for the find button
             btnFind.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
+                    mGoogleMap.clear();
+                    listItems.clear();
+                    places.clear();
+                    selectedPlacesNames.clear();
+                    selectedPlacesAddress.clear();
+                    adapter.notifyDataSetChanged();
 
-                    btn_getRoute.setVisibility(View.VISIBLE);
+                    btnStartTrip.setVisibility(View.VISIBLE);
                     fragment.getView().setVisibility(v.VISIBLE);
 
-
-                    getPlaceTypes placeTypes = new getPlaceTypes();
                     setParameters(mLatitude_start, mLongitude_start, mLatitude_end, mLongitude_end);
-                    //routesJSON = placeTypes.getRoute(places);
+
                     routesJSON = MapHelperClass.getRoute(places);
+                    polylines = MapHelperClass.drawRoute(routesJSON, mGoogleMap);
+
+                    // Differentiate start and end location markers with different colors. Start = Green, End = Red.
+                    mGoogleMap.addMarker(new MarkerOptions().position(places.get(0))
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                    mGoogleMap.addMarker(new MarkerOptions().position(places.get(1))
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+
                     JSONObject overviewPolyline = null;
                     try {
                         overviewPolyline = routesJSON.getJSONObject("overview_polyline");
@@ -283,48 +288,50 @@ public class getPlacesActivity extends FragmentActivity {
             }
 
         }
-        btn_getRoute.setOnClickListener(new View.OnClickListener() {
+
+        btnStartTrip.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                /*routeActivity activity = new routeActivity();
-                //passing paremeters to route activity
-                activity.setRouteParameters(waypoints, mLatitude_start, mLongitude_start, mLatitude_end, mLongitude_end);
-
-                //Starting roue activity
-                Intent intent = new Intent(getApplicationContext(), routeActivity.class);
-                intent.putParcelableArrayListExtra("waypoints",waypoints);
-                startActivity(intent);*/
                 Intent intent = new Intent(getApplicationContext(), MapTripActivity.class);
                 intent.putParcelableArrayListExtra("latLngs", places);
                 intent.putStringArrayListExtra("names", selectedPlacesNames);
                 intent.putStringArrayListExtra("address", selectedPlacesAddress);
                 startActivity(intent);
+                finish();
             }
 
         });
+
+        chk_bars.setOnCheckedChangeListener(checkBoxListener);
+        chk_restaurants.setOnCheckedChangeListener(checkBoxListener);
+        chk_tourist.setOnCheckedChangeListener(checkBoxListener);
     }
 
     public void searchPlaceTypes(ArrayList<LatLng> points){
-        final String YOUR_API_KEY = "AIzaSyAc5MbJJkhChz82RcQ5Feesa2GmM1YAoWA";
-        StringBuilder type = new StringBuilder("");
+        StringBuilder type = new StringBuilder("&types=");
         if (restaurant)
-            type.append("&types=restaurant");
+            type.append("restaurant|cafe|");
         if (bars)
-            type.append("&types=bar");
+            type.append("bar|");
         if (tourist)
-            type.append("&types=zoo");
+            type.append("zoo|museum|park|");
+
+        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        url.append("radius=1000");
+        url.append("&sensor=true");
+        url.append("&key="+YOUR_API_KEY);
+        if(restaurant || bars || tourist)
+            url.append(type.deleteCharAt(type.length()-1));
+        if(restaurant || bars)
+            url.append("&opennow=true");
+
         int size = points.size()/20;
         int i=0;
         while(i<points.size()){
-
             LatLng src = points.get(i);
-            StringBuilder sb = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-            sb.append("location=" + src.latitude + "," + src.longitude);
-            sb.append("&radius=2000");
-            sb.append("&type=" + type);
-            sb.append("&sensor=true");
-            sb.append("&key=" + YOUR_API_KEY);
+            StringBuilder sb = new StringBuilder(url);
+            sb.append("&location=" + src.latitude + "," + src.longitude);
 
             // Creating a new non-ui thread task to download json data
             PlacesTask placesTask = new PlacesTask();
@@ -337,12 +344,8 @@ public class getPlacesActivity extends FragmentActivity {
         // to get the last point if skipped.
         if((i-size)<points.size()-1 ){
             LatLng src = points.get(points.size()-1);
-            StringBuilder sb = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-            sb.append("location=" + src.latitude + "," + src.longitude);
-            sb.append("&radius=2000");
-            sb.append("&type=" + type);
-            sb.append("&sensor=true");
-            sb.append("&key=" + YOUR_API_KEY);
+            StringBuilder sb = new StringBuilder(url);
+            sb.append("&location=" + src.latitude + "," + src.longitude);
 
             // Creating a new non-ui thread task to download json data
             PlacesTask placesTask = new PlacesTask();
@@ -352,20 +355,24 @@ public class getPlacesActivity extends FragmentActivity {
 
         }
     }
-    public void setParameters(Double lat_start, Double long_start,
-                                     Double lat_end,Double long_end) {
+    public void setParameters(Double lat_start, Double long_start, Double lat_end, Double long_end) {
         System.out.println("In set");
 
         places.add(new LatLng(lat_start, long_start));
+        selectedPlacesNames.add(atvPlaces_start.getText().toString().split(",")[0]);
+        selectedPlacesAddress.add(atvPlaces_start.getText().toString());
+
         places.add(new LatLng(lat_end, long_end));
+        selectedPlacesNames.add(atvPlaces_end.getText().toString().split(",")[0]);
+        selectedPlacesAddress.add(atvPlaces_end.getText().toString());
+
         System.out.println(places);
     }
 
     /**
-     *A method to get the Latitude and Logitude of orgin from Place ID
+     *A method to get the Latitude and Longitude of place from Place ID
      */
     public void FunctionLatLong(String PlaceID){
-        final String YOUR_API_KEY = "AIzaSyAc5MbJJkhChz82RcQ5Feesa2GmM1YAoWA";
         StringBuilder sb = new StringBuilder("https://maps.googleapis.com/maps/api/place/details/json?");
         sb.append("&placeid="+PlaceID);
         sb.append("&key=" + YOUR_API_KEY);
@@ -440,7 +447,6 @@ public class getPlacesActivity extends FragmentActivity {
      *A method to get the Latitude and Logitude of detination from Place ID
      */
     public void FunctionLatLong_end(String PlaceID){
-        final String YOUR_API_KEY = "AIzaSyAc5MbJJkhChz82RcQ5Feesa2GmM1YAoWA";
         StringBuilder sb = new StringBuilder("https://maps.googleapis.com/maps/api/place/details/json?");
         sb.append("&placeid="+PlaceID);
         sb.append("&key=" + YOUR_API_KEY);
@@ -563,7 +569,7 @@ public class getPlacesActivity extends FragmentActivity {
             String data = "";
 
             //Obtain browser key from https://code.google.com/apis/console
-            String key = "key=AIzaSyAc5MbJJkhChz82RcQ5Feesa2GmM1YAoWA";
+            String key = "key="+YOUR_API_KEY;
 
             String input="";
 
@@ -600,6 +606,8 @@ public class getPlacesActivity extends FragmentActivity {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
+            System.out.println("AutocompletePlacesTask onPostExecute "+result);
+
 
             // Creating ParserTask
             autoCompleteTask = new AutocompleteTask();
@@ -636,7 +644,7 @@ public class getPlacesActivity extends FragmentActivity {
         @Override
         protected void onPostExecute(List<HashMap<String, String>> result) {
 
-            System.out.println(result);
+            System.out.println("AutocompleteTask onPostExecute "+result);
             String[] from = new String[] { "description","place_id"};
             int[] to = new int[] { android.R.id.text1 };
             // Creating a SimpleAdapter for the AutoCompleteTextView
@@ -711,12 +719,12 @@ public class getPlacesActivity extends FragmentActivity {
         // Executed after the complete execution of doInBackground() method
         protected void onPostExecute(List<HashMap<String, String>> list) {
 
+            // Creating a marker
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+
             for(int i=0;i<list.size();i++){
                 // Clears all the existing markers
-
-
-                // Creating a marker
-                MarkerOptions markerOptions = new MarkerOptions();
 
                 // Getting a place from the places list
                 HashMap<String, String> hmPlace = list.get(i);
@@ -745,43 +753,45 @@ public class getPlacesActivity extends FragmentActivity {
                 // Placing a marker on the touched position
                 mGoogleMap.addMarker(markerOptions);
                 System.out.println("name," + name + ",Vicinity" + vicinity);
-
-
             }
 
             mGoogleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 @Override
                 public void onInfoWindowClick(Marker marker) {
                     System.out.println("Adding a text");
-                        /*Intent intent = new Intent(MapActivity.this, OtherActivity.class);
-                        startActivity(intent);*/
-                    countWaypoints++;
-                    listItems.add(marker.getTitle());
-                    System.out.println(marker.getPosition());
-
                     LatLng point = marker.getPosition();
-                    String name = marker.getTitle();
-                    System.out.println(point);
+                    String title = marker.getTitle();
 
-                    for(Polyline line: polylines)
-                            line.remove();
-                    //waypoints.add((countWaypoints - 1), point);
-                    places.add(countWaypoints, point);
-                    selectedPlacesNames.add(marker.getTitle().split(":")[0]);
-                    selectedPlacesAddress.add(marker.getTitle().split(":")[1]);
-
-                    routesJSON = MapHelperClass.getRoute(places);
-                    polylines = MapHelperClass.drawRoute(routesJSON,mGoogleMap);
-                    MapHelperClass.drawMarkers(places,mGoogleMap);
+                    // Add place to list when info window is clicked
+                    if(!listItems.contains(marker.getTitle())) {
+                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+                        listItems.add(marker.getTitle());
+                        places.add(1, point);
+                        selectedPlacesNames.add(1, title.split(":")[0]);
+                        selectedPlacesAddress.add(1, title.split(":")[1]);
+                    }
+                    // If place is already in list and info window is clicked again, remove place from list
+                    else {
+                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                        listItems.remove(marker.getTitle());
+                        places.remove(point);
+                        selectedPlacesNames.remove(title.split(":")[0]);
+                        selectedPlacesAddress.remove(title.split(":")[1]);
+                    }
 
                     adapter.notifyDataSetChanged();
 
+                    //Clear old route
+                    for (Polyline line : polylines)
+                        line.remove();
+
+                    routesJSON = MapHelperClass.getRoute(places);
+                    polylines = MapHelperClass.drawRoute(routesJSON, mGoogleMap);
                 }
             });
         }
 
     }
-
 
 
     public void onLocationChanged(Location location) {
@@ -794,15 +804,4 @@ public class getPlacesActivity extends FragmentActivity {
 
     }
 
-
-
-
-/*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
-    }
-    */
 }

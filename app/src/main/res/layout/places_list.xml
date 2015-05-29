@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="5dp">
 
     <TextView
         android:layout_width="match_parent"
@@ -11,11 +14,23 @@
         android:id="@+id/PlaceHeader" />
 
     <TextView
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Address"
+        android:id="@+id/PlaceAddress"
+        android:layout_marginLeft="10dp"
+        android:layout_below="@id/PlaceHeader"/>
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="5 Photos"
         android:id="@+id/PicsCount"
         android:layout_below="@id/PlaceHeader"
-        android:layout_alignParentRight="true" />
+        android:layout_toRightOf="@id/PlaceAddress"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="5dp"
+        android:gravity="end"/>
 </RelativeLayout>

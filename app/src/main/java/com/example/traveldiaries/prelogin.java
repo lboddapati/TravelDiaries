@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.example.traveldiaries.R;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import android.widget.AdapterView;
@@ -24,15 +25,22 @@ public class prelogin extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if(ParseUser.getCurrentUser() != null) {
+            Intent intent = new Intent(this, PreviousTrip.class);
+            startActivity(intent);
+            finish();
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_prelogin);
         //final ArrayList<Bitmap> main_page= new ArrayList<Bitmap>();
         View decorView = getWindow().getDecorView();
-// Hide the status bar.
+        // Hide the status bar.
         int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
         decorView.setSystemUiVisibility(uiOptions);
-// Remember that you should never show the action bar if the
-// status bar is hidden, so hide that too if necessary.
+
+        // Remember that you should never show the action bar if the
+        // status bar is hidden, so hide that too if necessary.
         ActionBar actionBar = getActionBar();
         actionBar.hide();
         Bitmap td1 = BitmapFactory.decodeResource(getResources(), R.drawable.td1);
