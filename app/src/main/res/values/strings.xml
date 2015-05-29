@@ -16,5 +16,9 @@
     <string name="action_cancel_trip">Cancel</string>
     <string name="From"> Origin</string>
     <string name="To">Destination</string>
+    <string name="title_activity_pre_login">PreLogin</string>
+    <string name="title_activity_prelogin">prelogin</string>
+    <string name="hello_round">Hello Round World!</string>
+    <string name="hello_square">Hello Square World!</string>
 
 </resources>
