@@ -10,9 +10,9 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_done">Done</string>
     <string name="title_activity_previous_trip">Previous Trips</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_view_trip">My Trip</string>
     <string name="action_new_trip">New Trip</string>
-    <string name="title_activity_my_photos">MyPhotos</string>
+    <string name="title_activity_my_photos">My Photos</string>
     <string name="action_cancel_trip">Cancel</string>
     <string name="From"> Origin</string>
     <string name="To">Destination</string>
@@ -20,5 +20,6 @@
     <string name="title_activity_prelogin">prelogin</string>
     <string name="hello_round">Hello Round World!</string>
     <string name="hello_square">Hello Square World!</string>
+    <string name="action_view_all_photos">View all photos</string>
 
 </resources>

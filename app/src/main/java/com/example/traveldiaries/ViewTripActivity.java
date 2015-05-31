@@ -8,6 +8,8 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -42,8 +44,11 @@ public class ViewTripActivity extends FragmentActivity {
     private ArrayList<LatLng> latLngs;
 
     private ArrayList<ArrayList<Bitmap>> photosAtPlaces;
+    private ArrayList<Bitmap> allPhotos;
     private ArrayList<ArrayList<String>> notesAtPlaces;
+    private ArrayList<String> allNotes;
     private ArrayList<ArrayList<String>> geotagTimestampOfPlaces;
+    private ArrayList<String> allGeotagTimestamps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,23 +70,23 @@ public class ViewTripActivity extends FragmentActivity {
         ParseQuery<ParseObject> tripQuery = ParseQuery.getQuery("Trip");
         try {
             trip = tripQuery.get(tripID);
+            String tripname = trip.getString("tripName");
+            //String date = String.valueOf(trip.getCreatedAt());
+            setTitle(tripname);//+" ("+date+")");
+
             placesJSON = trip.getJSONObject("places");
             route = trip.getJSONObject("route");
             ParseQuery<ParseObject> picsQuery = ParseQuery.getQuery("TripPhotoNote");
             picsQuery.whereEqualTo("trip", trip.getObjectId());
             photoNotes = picsQuery.find();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
 
-        parsePlacesJSON(placesJSON);
-        MapHelperClass.drawMarkers(latLngs, names, mMap, null);
-        MapHelperClass.drawRoute(route, mMap);
-        initialize();
+            parsePlacesJSON(placesJSON);
+            MapHelperClass.drawMarkers(latLngs, names, mMap, null);
+            MapHelperClass.drawRoute(route, mMap);
+            initialize();
 
-        ListView listView = (ListView) findViewById(R.id.places);
+            ListView listView = (ListView) findViewById(R.id.places);
 
-        try {
             matchPhotosToPlaces();
             listView.setAdapter(new ListAdapter(this, names, address, getPhotoCount(photosAtPlaces)));
             listView.setVisibility(View.VISIBLE);
@@ -102,6 +107,10 @@ public class ViewTripActivity extends FragmentActivity {
     }
 
     private void initialize() {
+        allPhotos = new ArrayList<Bitmap>();
+        allNotes = new ArrayList<String>();
+        allGeotagTimestamps = new ArrayList<String>();
+
         photosAtPlaces = new ArrayList<ArrayList<Bitmap>>(latLngs.size());
         notesAtPlaces = new ArrayList<ArrayList<String>>(latLngs.size());
         geotagTimestampOfPlaces = new ArrayList<ArrayList<String>>(latLngs.size());
@@ -119,6 +128,8 @@ public class ViewTripActivity extends FragmentActivity {
 
         for (ParseObject photonote : photoNotes) {
             ParseGeoPoint geoPoint = (ParseGeoPoint) photonote.get("location");
+
+
             float minDist = Float.MIN_VALUE;
             int closestPlace=0;
             for(int i=0; i<latLngs.size(); i++) {
@@ -130,10 +141,16 @@ public class ViewTripActivity extends FragmentActivity {
                     closestPlace = i;
                 }
             }
+
             byte[] data = photonote.getParseFile("photo").getData();
             Bitmap photo = BitmapFactory.decodeByteArray(data, 0, data.length, options);
             String note = photonote.getString("note");
-            String geotagTimeStamp = "At "+names.get(closestPlace)+", "+photonote.getCreatedAt();
+            String geotagTimeStamp = "At "+names.get(closestPlace)+" ("+photonote.getCreatedAt()+")";
+
+            allPhotos.add(photo);
+            allNotes.add(note);
+            allGeotagTimestamps.add(geotagTimeStamp);
+
             if(photosAtPlaces.get(closestPlace)==null) {
                 ArrayList<Bitmap> pictures = new ArrayList<Bitmap>();
                 ArrayList<String> notes = new ArrayList<String>();
@@ -212,6 +229,29 @@ public class ViewTripActivity extends FragmentActivity {
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_view_trip, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_view_all_photos) {
+            Intent intent;
+            intent = new Intent(ViewTripActivity.this, ViewTripPhotosActivity.class);
+            intent.putParcelableArrayListExtra("photos", allPhotos);
+            intent.putStringArrayListExtra("notes", allNotes);
+            intent.putStringArrayListExtra("geotag_timestamp", allGeotagTimestamps);
+            startActivity(intent);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 }

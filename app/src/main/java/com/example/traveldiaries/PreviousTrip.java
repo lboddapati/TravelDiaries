@@ -39,41 +39,42 @@ public class PreviousTrip extends Activity {
         tripsQuery.whereEqualTo("user", user);
         try {
             trips = tripsQuery.find();
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 2;  //TODO: set optimal size;
+
+            for(ParseObject trip : trips) {
+                String tripname = trip.getString("tripName");
+                String tripdate = trip.getCreatedAt().toString().replaceAll("\\s+\\d+:\\d+:\\d+\\s+PDT", "");
+                trip_names.add(tripname+" ("+tripdate+")");
+
+                ParseQuery<ParseObject> picsQuery = ParseQuery.getQuery("TripPhotoNote");
+                picsQuery.whereEqualTo("trip", trip.getObjectId());
+                ParseObject photoNote = null;
+                Bitmap icon = null;
+                try {
+                    photoNote = picsQuery.getFirst();
+                    if(photoNote != null) {
+                        byte[] data = photoNote.getParseFile("photo").getData();
+                        icon = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+                    }
+                } catch (ParseException e) {
+                    Log.d("PHOTOS", "Error:: fetching photos!!");
+                    e.printStackTrace();
+                } finally {
+                    if( icon == null) {
+                        icon = BitmapFactory.decodeResource(getResources(), R.drawable.defaulticon, options);
+                    }
+                    trip_icons.add(icon);
+                }
+            }
         } catch (ParseException e) {
             e.printStackTrace();
-        }
-
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 2;  //TODO: set optimal size;
-
-        for(ParseObject trip : trips) {
-            trip_names.add(trip.getString("tripName"));
-
-            ParseQuery<ParseObject> picsQuery = ParseQuery.getQuery("TripPhotoNote");
-            picsQuery.whereEqualTo("trip", trip.getObjectId());
-            ParseObject photoNote = null;
-            Bitmap icon = null;
-            try {
-                photoNote = picsQuery.getFirst();
-                if(photoNote != null) {
-                    byte[] data = photoNote.getParseFile("photo").getData();
-                    icon = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-                }
-            } catch (ParseException e) {
-                Log.d("PHOTOS", "Error:: fetching photos!!");
-                e.printStackTrace();
-            } finally {
-                if( icon == null) {
-                    icon = BitmapFactory.decodeResource(getResources(), R.drawable.defaulticon, options);
-                }
-                trip_icons.add(icon);
-            }
         }
 
         setContentView(R.layout.activity_previous_trip);
 
         GridView gridview = (GridView) findViewById(R.id.gridview);
-        //Toast.makeText(this, " setting adapter", Toast.LENGTH_SHORT).show();
         gridview.setAdapter(new PicAdapter(this, trip_names, trip_icons));
         final List<ParseObject> finalTrips = trips;
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -104,11 +105,8 @@ public class PreviousTrip extends Activity {
             //finish();
         } else if (id == R.id.action_sign_out) {
             user.logOut();
-            //Toast.makeText(this, "Signing out", Toast.LENGTH_SHORT).show();
-            //Intent loginIntent = new Intent(PreviousTrip.this, LoginActivity.class);
             Intent loginIntent = new Intent(PreviousTrip.this, prelogin.class);
             startActivity(loginIntent);
-            //Toast.makeText(this, "Starting login", Toast.LENGTH_SHORT).show();
             finish();
         }
 
