@@ -25,7 +25,6 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -293,7 +292,7 @@ public class getPlacesActivity extends FragmentActivity {
 
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MapTripActivity.class);
+                Intent intent = new Intent(getApplicationContext(), StartTripActivity.class);
                 intent.putParcelableArrayListExtra("latLngs", places);
                 intent.putStringArrayListExtra("names", selectedPlacesNames);
                 intent.putStringArrayListExtra("address", selectedPlacesAddress);

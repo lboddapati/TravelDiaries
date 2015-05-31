@@ -49,7 +49,7 @@
             android:label="@string/title_activity_previous_trip" >
         </activity>
         <activity
-            android:name=".MapTripActivity"
+            android:name=".StartTripActivity"
             android:label="@string/title_activity_map_trip" >
         </activity>
         <activity
@@ -64,7 +64,7 @@
                 android:value="com.example.traveldiaries.PreviousTrip" />
         </activity>
         <activity
-            android:name=".MyPhotos"
+            android:name=".ViewTripPhotosActivity"
             android:label="@string/title_activity_my_photos" >
         </activity>
         <activity

@@ -17,22 +17,19 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.parse.FindCallback;
-import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapTripActivity extends FragmentActivity {
+public class StartTripActivity extends FragmentActivity {
     //TODO 1: When back button pressed while trip is in progress, save state.
 
     private GoogleMap mMap;
@@ -46,9 +43,8 @@ public class MapTripActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //setLayoutFile(R.layout.activity_map_trip);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map_trip);
+        setContentView(R.layout.activity_start_trip);
 
         if (android.os.Build.VERSION.SDK_INT > 9) {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -80,18 +76,16 @@ public class MapTripActivity extends FragmentActivity {
         }
         JSONObject route = MapHelperClass.getRoute(latLngs);
         trip.put("route", route);
-        //trip.saveInBackground();
         trip.pinInBackground();
         MapHelperClass.drawMarkers(latLngs, address, mMap, null);
         MapHelperClass.drawRoute(route, mMap);
-        //displayDirections(route, directionsListView, names);
         DirectionsExpandableListAdapter adapter = new DirectionsExpandableListAdapter(getBaseContext(), route, names);
         directionsListView.setAdapter(adapter);
 
         addPicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent pictureIntent = new Intent(MapTripActivity.this, AddPhotoNoteActivity.class);
+                Intent pictureIntent = new Intent(StartTripActivity.this, AddPhotoNoteActivity.class);
                 pictureIntent.putExtra("tripname", tripname);
                 startActivity(pictureIntent);
             }
@@ -107,7 +101,7 @@ public class MapTripActivity extends FragmentActivity {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                Intent prevTrips = new Intent(MapTripActivity.this, PreviousTrip.class);
+                Intent prevTrips = new Intent(StartTripActivity.this, PreviousTrip.class);
                 startActivity(prevTrips);
                 finish();
             }
@@ -121,7 +115,7 @@ public class MapTripActivity extends FragmentActivity {
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if(e == null) {
-                    Toast.makeText(MapTripActivity.this, "UPLOADING IMAGES TO CLOUD", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(StartTripActivity.this, "UPLOADING IMAGES TO CLOUD", Toast.LENGTH_SHORT).show();
                     Log.d("UPLOADING IMAGES TO CLOUD", tripname+" - FOUND :: "+parseObjects.size());
                     for(ParseObject obj : parseObjects) {
                         obj.put("trip", trip.getObjectId());
@@ -146,7 +140,7 @@ public class MapTripActivity extends FragmentActivity {
         if (id == R.id.action_cancel_trip) {
             trip.unpinInBackground();
             ParseObject.unpinAllInBackground(tripname);
-            Intent prevTrips = new Intent(MapTripActivity.this, PreviousTrip.class);
+            Intent prevTrips = new Intent(StartTripActivity.this, PreviousTrip.class);
             startActivity(prevTrips);
         }
         finish();

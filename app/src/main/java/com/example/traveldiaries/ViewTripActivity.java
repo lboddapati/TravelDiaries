@@ -26,7 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class ViewTripActivity extends FragmentActivity {
@@ -38,12 +37,13 @@ public class ViewTripActivity extends FragmentActivity {
     private JSONObject placesJSON; //TODO: change this to list of google places;
     private JSONObject route;
 
-    ArrayList<String> names;
-    ArrayList<String> address;
-    ArrayList<LatLng> latLngs;
+    private ArrayList<String> names;
+    private ArrayList<String> address;
+    private ArrayList<LatLng> latLngs;
 
     private ArrayList<ArrayList<Bitmap>> photosAtPlaces;
     private ArrayList<ArrayList<String>> notesAtPlaces;
+    private ArrayList<ArrayList<String>> geotagTimestampOfPlaces;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +56,6 @@ public class ViewTripActivity extends FragmentActivity {
         }
 
         setUpMapIfNeeded();
-
 
         names = new ArrayList<String>();
         address = new ArrayList<String>();
@@ -75,7 +74,6 @@ public class ViewTripActivity extends FragmentActivity {
             e.printStackTrace();
         }
 
-
         parsePlacesJSON(placesJSON);
         MapHelperClass.drawMarkers(latLngs, names, mMap, null);
         MapHelperClass.drawRoute(route, mMap);
@@ -91,9 +89,10 @@ public class ViewTripActivity extends FragmentActivity {
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                     Intent intent;
-                    intent = new Intent(ViewTripActivity.this, MyPhotos.class);
+                    intent = new Intent(ViewTripActivity.this, ViewTripPhotosActivity.class);
                     intent.putParcelableArrayListExtra("photos", photosAtPlaces.get(position));
                     intent.putStringArrayListExtra("notes", notesAtPlaces.get(position));
+                    intent.putStringArrayListExtra("geotag_timestamp", geotagTimestampOfPlaces.get(position));
                     startActivity(intent);
                 }
             });
@@ -105,23 +104,19 @@ public class ViewTripActivity extends FragmentActivity {
     private void initialize() {
         photosAtPlaces = new ArrayList<ArrayList<Bitmap>>(latLngs.size());
         notesAtPlaces = new ArrayList<ArrayList<String>>(latLngs.size());
+        geotagTimestampOfPlaces = new ArrayList<ArrayList<String>>(latLngs.size());
         for(int i=0; i<latLngs.size(); i++) {
             photosAtPlaces.add(null);
             notesAtPlaces.add(null);
+            geotagTimestampOfPlaces.add(null);
         }
 
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
     }
 
     private void matchPhotosToPlaces() throws ParseException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 2;  //TODO: set optimal size;
 
-        //ArrayList<ArrayList<ParseObject>> photoNotePlaceMap = new ArrayList<ArrayList<ParseObject>>(latLngs.size());
         for (ParseObject photonote : photoNotes) {
             ParseGeoPoint geoPoint = (ParseGeoPoint) photonote.get("location");
             float minDist = Float.MIN_VALUE;
@@ -138,16 +133,21 @@ public class ViewTripActivity extends FragmentActivity {
             byte[] data = photonote.getParseFile("photo").getData();
             Bitmap photo = BitmapFactory.decodeByteArray(data, 0, data.length, options);
             String note = photonote.getString("note");
+            String geotagTimeStamp = "At "+names.get(closestPlace)+", "+photonote.getCreatedAt();
             if(photosAtPlaces.get(closestPlace)==null) {
                 ArrayList<Bitmap> pictures = new ArrayList<Bitmap>();
                 ArrayList<String> notes = new ArrayList<String>();
+                ArrayList<String> geotagTimeStamps = new ArrayList<String>();
                 pictures.add(photo);
                 notes.add(note);
+                geotagTimeStamps.add(geotagTimeStamp);
                 photosAtPlaces.add(closestPlace, pictures);
                 notesAtPlaces.add(closestPlace, notes);
+                geotagTimestampOfPlaces.add(closestPlace, geotagTimeStamps);
             } else {
                 photosAtPlaces.get(closestPlace).add(photo);
                 notesAtPlaces.get(closestPlace).add(note);
+                geotagTimestampOfPlaces.get(closestPlace).add(closestPlace, geotagTimeStamp);
             }
         }
     }

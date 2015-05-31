@@ -182,6 +182,7 @@ public class AddPhotoNoteActivity extends Activity {
 
         //ParseGeoPoint geoPoint = getCurrentLocation();
         final ParseGeoPoint geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
+        //TODO: Retry getCurrentLocation 2 times and then prompt for location entry if fail again
         if(geoPoint != null) {
             for (int i = 0; i < photos.size(); i++) {
                 ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -191,31 +192,6 @@ public class AddPhotoNoteActivity extends Activity {
                 final String imageFileName = tripname +"_image_"+ timeStamp +"_"+ i +".jpeg";
                 final ParseFile parseImageFile = new ParseFile(imageFileName, data);
                 final String caption = notes.get(i);
-
-                /*parseImageFile.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if (e != null) {
-                            Toast.makeText(AddPhotoNoteActivity.this, "Error saving:: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        } else {
-                            final ParseObject imageObject = new ParseObject("TripPhotoNote");
-                            imageObject.put("photo", parseImageFile);
-                            imageObject.put("note", caption);
-                            imageObject.put("location", geoPoint);
-                            imageObject.put("trip", tripId);
-                            imageObject.saveInBackground(new SaveCallback() {
-                                @Override
-                                public void done(ParseException e) {
-                                    if(e != null) {
-                                        Log.d("PARSE UPLOAD", "ERROR:: UPLOAD FAILED!!!!!   "+e.getMessage());
-                                    } else {
-                                        Log.d("PARSE UPLOAD", "UPLOADED SUCCESSFULLY!!!!!");
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });*/
 
                 try {
                     parseImageFile.save();

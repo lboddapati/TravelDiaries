@@ -10,12 +10,28 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/caption"
-        android:gravity="center"
-        android:text="Hi"
-        android:textSize="20sp"
+        android:id="@+id/geotag_timestamp"
+        android:gravity="right"
+        android:text="At Place, Date, time"
+        android:textColor="@android:color/white"
+        android:textSize="15sp"
         android:elevation="24dp"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:paddingRight="10dp"
+        android:paddingTop="15dp"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/caption"
+        android:gravity="left"
+        android:text="Photo Caption"
+        android:textColor="@android:color/white"
+        android:textSize="15sp"
+        android:elevation="24dp"
+        android:layout_alignParentBottom="true"
+        android:paddingBottom="10dp"
+        android:paddingLeft="15dp"/>
 
 
 </RelativeLayout>
