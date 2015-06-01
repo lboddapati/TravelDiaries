@@ -13,9 +13,12 @@ import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -62,23 +65,33 @@ public class StartTripActivity extends FragmentActivity {
         System.out.println("IN MAP TRIP ACTIVITY :: "+latLngs.size()+"::"+names.size()+"::"+address.size());
 
         final ExpandableListView directionsListView = (ExpandableListView) findViewById(R.id.directions);
-        //final Button startTrip = (Button) findViewById(R.id.startTrip);
         final Button finishTrip = (Button) findViewById(R.id.finishTrip);
         final ImageButton addPicture = (ImageButton) findViewById(R.id.addPicture);
 
         trip = new ParseObject("Trip");
         trip.put("user", user);
         trip.put("tripName", tripname);
+        JSONObject route = MapHelperClass.getRoute(latLngs);
+        trip.put("route", route);
         try {
+            JSONArray waypointOrder = route.getJSONArray("waypoint_order");
+            reorderByOptimizedWaypoints(waypointOrder);
             trip.put("places", getPlacesJSON(names, address, latLngs));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JSONObject route = MapHelperClass.getRoute(latLngs);
-        trip.put("route", route);
         trip.pinInBackground();
-        MapHelperClass.drawMarkers(latLngs, address, mMap, null);
+
+        MapHelperClass.drawMarkers(latLngs.subList(1, latLngs.size()-1), address.subList(1, latLngs.size()-1), mMap, BitmapDescriptorFactory.HUE_VIOLET);
         MapHelperClass.drawRoute(route, mMap);
+        mMap.addMarker(new MarkerOptions().position(latLngs.get(0))
+                .title(address.get(0))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        mMap.addMarker(new MarkerOptions().position(latLngs.get(latLngs.size() - 1))
+                .title(address.get(latLngs.size()-1))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngs.get(0), 13.0f));
+
         DirectionsExpandableListAdapter adapter = new DirectionsExpandableListAdapter(getBaseContext(), route, names);
         directionsListView.setAdapter(adapter);
 
@@ -108,6 +121,32 @@ public class StartTripActivity extends FragmentActivity {
         });
     }
 
+    private void reorderByOptimizedWaypoints(JSONArray waypointOrder) throws JSONException {
+        ArrayList<LatLng> reorderedLatLngs = new ArrayList<LatLng>();
+        ArrayList<String> reorderedNames = new ArrayList<String>();
+        ArrayList<String> reorderedAddress = new ArrayList<String>();
+
+        reorderedLatLngs.add(latLngs.get(0));
+        reorderedNames.add(names.get(0));
+        reorderedAddress.add(address.get(0));
+
+        for (int i=0; i<waypointOrder.length(); i++) {
+            int waypoint = waypointOrder.getInt(i)+1;
+            reorderedLatLngs.add(latLngs.get(waypoint));
+            reorderedNames.add(names.get(waypoint));
+            reorderedAddress.add(address.get(waypoint));
+        }
+
+        int num_of_places = latLngs.size();
+        reorderedLatLngs.add(latLngs.get(num_of_places-1));
+        reorderedNames.add(names.get(num_of_places-1));
+        reorderedAddress.add(address.get(num_of_places-1));
+
+        latLngs = reorderedLatLngs;
+        names = reorderedNames;
+        address = reorderedAddress;
+    }
+
     private void uploadImagesToCloud() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("TripPhotoNote");
         query.fromPin(tripname);
@@ -115,7 +154,7 @@ public class StartTripActivity extends FragmentActivity {
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if(e == null) {
-                    Toast.makeText(StartTripActivity.this, "UPLOADING IMAGES TO CLOUD", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(StartTripActivity.this, "UPLOADING IMAGES TO CLOUD", Toast.LENGTH_SHORT).show();
                     Log.d("UPLOADING IMAGES TO CLOUD", tripname+" - FOUND :: "+parseObjects.size());
                     for(ParseObject obj : parseObjects) {
                         obj.put("trip", trip.getObjectId());
@@ -154,10 +193,10 @@ public class StartTripActivity extends FragmentActivity {
         for (int i=0; i<names.size(); i++) {
             JSONObject placeDetails = new JSONObject();
             placeDetails.put("name", names.get(i));
-                placeDetails.put("address", address.get(i));
-                placeDetails.put("latitude", latLngs.get(i).latitude);
-                placeDetails.put("longitude", latLngs.get(i).longitude);
-                placesArray.put(placeDetails);
+            placeDetails.put("address", address.get(i));
+            placeDetails.put("latitude", latLngs.get(i).latitude);
+            placeDetails.put("longitude", latLngs.get(i).longitude);
+            placesArray.put(placeDetails);
         }
         placesJSON.put("places", placesArray);
 

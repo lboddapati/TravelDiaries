@@ -25,6 +25,7 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -53,39 +54,38 @@ import java.util.HashMap;
 import java.util.List;
 
 public class getPlacesActivity extends FragmentActivity {
-    GoogleMap mGoogleMap;
+    private GoogleMap mGoogleMap;
     private String YOUR_API_KEY;
 
-    AutoCompleteTextView atvPlaces_start;
-    AutoCompleteTextView atvPlaces_end;
-    AutocompletePlacesTask placesTask;
-    AutocompleteTask autoCompleteTask;
-    LinearLayout linearLayout;
-    Button btnStartTrip;
-    Button btnFind;
-    CheckBox chk_restaurants;
-    CheckBox chk_bars;
-    CheckBox chk_tourist;
+    private AutoCompleteTextView atvPlaces_start;
+    private AutoCompleteTextView atvPlaces_end;
+    private AutocompletePlacesTask placesTask;
+    private AutocompleteTask autoCompleteTask;
+    private Button btnStartTrip;
+    private Button btnFind;
+    private CheckBox chk_restaurants;
+    private CheckBox chk_bars;
+    private CheckBox chk_tourist;
 
-    protected JSONObject routesJSON = new JSONObject();
-    ArrayList<LatLng> places = new ArrayList<LatLng>();
-    ArrayList<LatLng> points = new ArrayList<LatLng>();
-    ArrayList<Polyline> polylines = new ArrayList<Polyline>();
-    ArrayList<String> selectedPlacesNames = new ArrayList<String>();
-    ArrayList<String> selectedPlacesAddress = new ArrayList<String>();
+    private  JSONObject routesJSON = new JSONObject();
+    private ArrayList<LatLng> places = new ArrayList<LatLng>();
+    private ArrayList<LatLng> points = new ArrayList<LatLng>();
+    private ArrayList<Polyline> polylines = new ArrayList<Polyline>();
+    private ArrayList<String> selectedPlacesNames = new ArrayList<String>();
+    private ArrayList<String> selectedPlacesAddress = new ArrayList<String>();
 
-    boolean restaurant = false;
-    boolean tourist = false;
-    boolean bars = false;
+    private boolean restaurant = false;
+    private boolean tourist = false;
+    private boolean bars = false;
 
-    double mLatitude_start = 0;
-    double mLongitude_start = 0;
-    double mLatitude_end = 0;
-    double mLongitude_end = 0;
+    private double mLatitude_start = 0;
+    private double mLongitude_start = 0;
+    private double mLatitude_end = 0;
+    private double mLongitude_end = 0;
 
-    ListView listView;
-    ArrayList<String> listItems;
-    ArrayAdapter<String> adapter;
+    private ListView listView;
+    private ArrayList<String> listItems;
+    private ArrayAdapter<String> adapter;
 
     CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
@@ -252,6 +252,8 @@ public class getPlacesActivity extends FragmentActivity {
                     mGoogleMap.addMarker(new MarkerOptions().position(places.get(1))
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(places.get(0), 11.0f));
+
                     JSONObject overviewPolyline = null;
                     try {
                         overviewPolyline = routesJSON.getJSONObject("overview_polyline");
@@ -310,18 +312,19 @@ public class getPlacesActivity extends FragmentActivity {
     public void searchPlaceTypes(ArrayList<LatLng> points){
         StringBuilder type = new StringBuilder("&types=");
         if (restaurant)
-            type.append("restaurant|cafe|");
+            type.append("restaurant%7Ccafe%7C");
         if (bars)
-            type.append("bar|");
+            type.append("bar%7C");
         if (tourist)
-            type.append("zoo|museum|park|");
+            type.append("zoo%7Cmuseum%7Cpark%7C");
 
         StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
         url.append("radius=1000");
         url.append("&sensor=true");
         url.append("&key="+YOUR_API_KEY);
         if(restaurant || bars || tourist)
-            url.append(type.deleteCharAt(type.length()-1));
+            //url.append(type.deleteCharAt(type.length()-1));
+            url.append(type.substring(0,type.lastIndexOf("%7C")));
         if(restaurant || bars)
             url.append("&opennow=true");
 
@@ -763,11 +766,15 @@ public class getPlacesActivity extends FragmentActivity {
 
                     // Add place to list when info window is clicked
                     if(!listItems.contains(marker.getTitle())) {
-                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
-                        listItems.add(marker.getTitle());
-                        places.add(1, point);
-                        selectedPlacesNames.add(1, title.split(":")[0]);
-                        selectedPlacesAddress.add(1, title.split(":")[1]);
+                        if(canAddMorePlaces()) {
+                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+                            listItems.add(marker.getTitle());
+                            places.add(1, point);
+                            selectedPlacesNames.add(1, title.split(":")[0]);
+                            selectedPlacesAddress.add(1, title.split(":")[1]);
+                        } else {
+                            Toast.makeText(getPlacesActivity.this, "Only 8 waypoints allowed!", Toast.LENGTH_SHORT).show();
+                        }
                     }
                     // If place is already in list and info window is clicked again, remove place from list
                     else {
@@ -790,6 +797,10 @@ public class getPlacesActivity extends FragmentActivity {
             });
         }
 
+    }
+
+    private boolean canAddMorePlaces() {
+        return (places.size() < 10);
     }
 
 

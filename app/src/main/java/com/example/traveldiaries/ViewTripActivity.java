@@ -14,9 +14,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.ParseException;
 
 import com.parse.ParseGeoPoint;
@@ -81,8 +84,16 @@ public class ViewTripActivity extends FragmentActivity {
             photoNotes = picsQuery.find();
 
             parsePlacesJSON(placesJSON);
-            MapHelperClass.drawMarkers(latLngs, names, mMap, null);
+            MapHelperClass.drawMarkers(latLngs.subList(1, latLngs.size()-1), names.subList(1, latLngs.size()-1), mMap, BitmapDescriptorFactory.HUE_VIOLET);
             MapHelperClass.drawRoute(route, mMap);
+            mMap.addMarker(new MarkerOptions().position(latLngs.get(0))
+                    .title(names.get(0))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+            mMap.addMarker(new MarkerOptions().position(latLngs.get(latLngs.size()-1))
+                    .title(names.get(latLngs.size()-1))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngs.get(0), 11.0f));
+
             initialize();
 
             ListView listView = (ListView) findViewById(R.id.places);

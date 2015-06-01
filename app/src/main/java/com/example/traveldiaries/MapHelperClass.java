@@ -23,6 +23,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by lasyaboddapati on 5/28/15.
@@ -89,10 +90,10 @@ public class MapHelperClass {
             String encodedPolylines = overviewPolyline.getString("points");
             ArrayList<LatLng> points = decodePolylines(encodedPolylines);
 
-            if(points!=null && points.size()>0) {
+            /*if(points!=null && points.size()>0) {
                 //mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
-            }
+            }*/
 
             for(int i = 0; i<points.size()-1;i++){
                 LatLng src= points.get(i);
@@ -110,10 +111,10 @@ public class MapHelperClass {
        return polylines;
     }
 
-    public static void drawMarkers(ArrayList<LatLng> points, ArrayList<String> title, GoogleMap mMap, Float color) {
+    public static void drawMarkers(List<LatLng> points, List<String> title, GoogleMap mMap, Float color) {
         if(points!= null && points.size()>0) {
             //mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
+            //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
             MarkerOptions options = new MarkerOptions();
             if(color == null) {
                 options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
@@ -126,10 +127,10 @@ public class MapHelperClass {
         }
     }
 
-    public static void drawMarkers(ArrayList<LatLng> points, GoogleMap mMap, Float color) {
+    public static void drawMarkers(List<LatLng> points, GoogleMap mMap, Float color) {
         if(points!= null && points.size()>0) {
             //mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
+            //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
             MarkerOptions options = new MarkerOptions();
             if(color == null) {
                 options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
