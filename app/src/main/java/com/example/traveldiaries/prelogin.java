@@ -43,7 +43,7 @@ public class prelogin extends Activity {
         // status bar is hidden, so hide that too if necessary.
         ActionBar actionBar = getActionBar();
         actionBar.hide();
-        Bitmap td1 = BitmapFactory.decodeResource(getResources(), R.drawable.td1);
+        Bitmap td1 = BitmapFactory.decodeResource(getResources(), R.drawable.collage1);
         //main_page.add(td1);
         ImageView imageview=(ImageView) findViewById(R.id.imageview);
         imageview.setImageBitmap(td1);
