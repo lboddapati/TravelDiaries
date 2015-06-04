@@ -28,19 +28,31 @@ import java.util.List;
 /**
  * Created by lasyaboddapati on 5/28/15.
  */
+
+/**
+ * Helper Class for performing Map related functions like:
+ * - Get optimal route.
+ * - Draw the route on map.
+ * - Draw markers on map.
+ * - Decode polylines.
+ */
 public class MapHelperClass {
-    /*public static void setUpMapIfNeeded(GoogleMap mMap) {
-        // Do a null check to confirm that we have not already instantiated the map.
-        if (mMap == null) {
-            // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
 
-        }
-    }*/
-
-    public static JSONObject getRoute(ArrayList<LatLng> places) {
-
+    /**
+     * Method to get the optimal route for a given list of places. The method takes a List of LatLng's
+     * of the places. The first & last place in the list are considered the start and destination places
+     * respectively. All other points are considered waypoints. The method performs an Http Request to Google
+     * maps' directions api and returns a JSONObject which contains the details of the route. This method only
+     * returns the first route from the resultant JSON response. Please refer to Google maps' directions response
+     * object for a detailed description of the JSONObject.
+     *
+     * NOTE: Currently only upto 8 waypoints are supported. This is because Google maps allows only a maximum of
+     * 8 waypoints.
+     *
+     * @param places The list of places to visit.
+     * @return The route as a JSONObject.
+     */
+    public static JSONObject getRoute(List<LatLng> places) {
         String origin = "origin="+places.get(0).latitude+","+places.get(0).longitude;
         String dest = "destination="+places.get(places.size()-1).latitude+","+places.get(places.size()-1).longitude;
         String sensor = "sensor=false";
@@ -70,7 +82,6 @@ public class MapHelperClass {
                         + response.getStatusLine().getStatusCode());
             } else {
                 JSONObject result = new JSONObject(EntityUtils.toString(response.getEntity()));
-                //drawRoute(result.getJSONArray("routes").getJSONObject(0));
                 return result.getJSONArray("routes").getJSONObject(0);
             }
         } catch (IOException e) {
@@ -82,19 +93,26 @@ public class MapHelperClass {
 
     }
 
-   public static ArrayList<Polyline> drawRoute(JSONObject route, GoogleMap mMap) {
-       ArrayList<Polyline> polylines = new ArrayList<Polyline>();
+    /**
+     * Method to draw the route on the map. The method extracts the overview polyline from the input route
+     * JSONObject and decodes it to obtain the individual polylines to plot on the map.
+     *
+     * @param route The JSONObject which contains the details of the route.
+     * @param mMap  The map object on which the route is to be plotted.
+     * @return The list of decoded polylines.
+     */
+    public static ArrayList<Polyline> drawRoute(JSONObject route, GoogleMap mMap) {
+        ArrayList<Polyline> polylines = new ArrayList<Polyline>();
 
-       try {
+        try {
+            // Extract the encoded overview polyline.
             JSONObject overviewPolyline = route.getJSONObject("overview_polyline");
             String encodedPolylines = overviewPolyline.getString("points");
+
+            // Get the list of points corresponding to the encoded polyline.
             ArrayList<LatLng> points = decodePolylines(encodedPolylines);
 
-            /*if(points!=null && points.size()>0) {
-                //mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
-            }*/
-
+            // Draw polylines between all the points.
             for(int i = 0; i<points.size()-1;i++){
                 LatLng src= points.get(i);
                 LatLng dest= points.get(i+1);
@@ -108,13 +126,21 @@ public class MapHelperClass {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-       return polylines;
+
+        // Return the list of drawn polylines.
+        return polylines;
     }
 
+    /**
+     * Method that takes in a List of LatLngs and draw markers on the map at those locations.
+     *
+     * @param points The List of points where markers must be drawn.
+     * @param title The text to be displayed in the info window of the marked points.
+     * @param mMap The map object on which the markers must be plotted.
+     * @param color The color of the markers. If it is null, default color (RED) will be used.
+     */
     public static void drawMarkers(List<LatLng> points, List<String> title, GoogleMap mMap, Float color) {
         if(points!= null && points.size()>0) {
-            //mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
-            //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
             MarkerOptions options = new MarkerOptions();
             if(color == null) {
                 options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
@@ -127,10 +153,15 @@ public class MapHelperClass {
         }
     }
 
+    /**
+     * Method that takes in a List of LatLngs and draw markers on the map at those locations.
+     *
+     * @param points The List of points where markers must be drawn.
+     * @param mMap The map object on which the markers must be plotted.
+     * @param color The color of the markers. If it is null, default color (RED) will be used.
+     */
     public static void drawMarkers(List<LatLng> points, GoogleMap mMap, Float color) {
         if(points!= null && points.size()>0) {
-            //mMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
-            //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(0), 11.0f));
             MarkerOptions options = new MarkerOptions();
             if(color == null) {
                 options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
@@ -143,6 +174,12 @@ public class MapHelperClass {
         }
     }
 
+    /**
+     * Method to decode the encoded overview Polyline. Please check Google for details on how
+     * encoding and decoding is performed.
+     * @param encodedPolylines The encoded polyline.
+     * @return A list of LatLngs which correspond to the polyline points.
+     */
     public static ArrayList<LatLng> decodePolylines(String encodedPolylines) {
         int N = encodedPolylines.length();
         int lat = 0, lng = 0;

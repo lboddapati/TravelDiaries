@@ -9,7 +9,7 @@
     <string name="title_activity_add_photo_note">Add PhotoNotes</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_done">Done</string>
-    <string name="title_activity_previous_trip">Previous Trips</string>
+    <string name="title_activity_previous_trip">My Trips</string>
     <string name="title_activity_view_trip">My Trip</string>
     <string name="action_new_trip">New Trip</string>
     <string name="title_activity_my_photos">My Photos</string>

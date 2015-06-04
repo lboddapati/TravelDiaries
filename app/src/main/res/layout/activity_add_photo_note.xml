@@ -1,53 +1,78 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:layout_height="match_parent"
     tools:context="com.example.traveldiaries.AddPhotoNoteActivity">
 
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/cancel"
-        android:text="Cancel"
-        android:textSize="15sp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"/>
+    <!--<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:background="@color/Turquoise"
+        android:orientation="horizontal"
+        android:layout_alignParentTop="true">
+    </LinearLayout>-->
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/MediumTurquoise"
+        android:elevation="10dp"
+        android:id="@+id/menu_bar" >
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:orientation="horizontal"
+        android:id="@+id/imageButtons"
         android:layout_centerHorizontal="true">
         <ImageButton
             android:layout_width="25dp"
-            android:layout_height="25dp"
+            android:layout_height="wrap_content"
             android:id="@+id/delete"
+            style="?android:borderlessButtonStyle"
             android:src="@android:drawable/ic_menu_delete"
             android:layout_marginRight="10dp"/>
         <ImageButton
             android:layout_width="25dp"
-            android:layout_height="25dp"
+            android:layout_height="wrap_content"
+            style="?android:borderlessButtonStyle"
             android:id="@+id/addMore"
             android:src="@android:drawable/ic_menu_camera" />
     </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
+        android:id="@+id/cancel"
+        android:text="Cancel"
+        android:textSize="15sp"
+        android:paddingTop="5dp"
+        android:paddingLeft="5dp"
+        android:gravity="left|center_vertical"
+        android:textColor="@color/White"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@id/imageButtons"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
         android:id="@+id/done"
         android:text="Done"
         android:textSize="15sp"
+        android:paddingTop="5dp"
+        android:paddingRight="5dp"
+        android:gravity="right|center_vertical"
+        android:textColor="@color/White"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"/>
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@id/imageButtons"/>
+    </RelativeLayout>
 
     <ImageView
         android:layout_width="280dp"
         android:layout_height="280dp"
         android:id="@+id/picFocused"
-        android:layout_below="@id/cancel"
+        android:layout_below="@id/menu_bar"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:src="@drawable/ic_launcher"/>
@@ -60,6 +85,7 @@
         android:id="@+id/caption"
         android:layout_marginTop="20dp"
         android:hint="Tap to add caption ..."
+        android:singleLine="true"
         android:gravity="center"/>
 
     <GridView
@@ -67,6 +93,8 @@
         android:layout_height="match_parent"
         android:layout_below="@id/caption"
         android:layout_marginTop="20dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
         android:id="@+id/picIcons"
         android:numColumns="5"
         android:horizontalSpacing="10dp"

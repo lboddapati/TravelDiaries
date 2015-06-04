@@ -11,8 +11,6 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -28,32 +26,31 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
-import com.parse.SaveCallback;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+/**
+ * Activity to take photos and notes and add them to the trip.
+ */
 public class AddPhotoNoteActivity extends Activity {
     //TODO: Save photos to phone as well.
     static final int REQUEST_IMAGE_CAPTURE = 1;
-    Intent returnIntent;
-    Bundle bundle;
-    ArrayList<Bitmap> photos;
-    ArrayList<String> notes;
-    GridView picsThumbnailView;
-    ImageView imagePreview;
-    EditText imageCaption;
-    int selected;
-    String tripname;
+    private ArrayList<Bitmap> photos;
+    private ArrayList<String> notes;
+    private GridView picsThumbnailView;
+    private ImageView imagePreview;
+    private EditText imageCaption;
+    private int selected;
+    private String tripname;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        returnIntent = getIntent();
-        tripname = returnIntent.getStringExtra("tripname");
+        tripname = getIntent().getStringExtra("tripname");
         photos = new ArrayList<Bitmap>();
         notes = new ArrayList<String>();
 
@@ -62,57 +59,57 @@ public class AddPhotoNoteActivity extends Activity {
 
         setContentView(R.layout.activity_add_photo_note);
 
+        final int STATUS_BAR_COLOR = getResources().getColor(R.color.DarkerTurquoise);
+        getWindow().setStatusBarColor(STATUS_BAR_COLOR);
+
+        // UI Elements
         TextView cancel = (TextView) findViewById(R.id.cancel);
         TextView done = (TextView) findViewById(R.id.done);
         ImageButton delete = (ImageButton) findViewById(R.id.delete);
         ImageButton addMore = (ImageButton) findViewById(R.id.addMore);
         imagePreview = (ImageView) findViewById(R.id.picFocused);
         imageCaption = (EditText) findViewById(R.id.caption);
-
         picsThumbnailView = (GridView) findViewById(R.id.picIcons);
         ImageAdapter adapter = new ImageAdapter(this, photos);
+
         picsThumbnailView.setAdapter(adapter);
         picsThumbnailView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selected = position;
-                //Toast.makeText(AddPhotoNoteActivity.this, selected+"th Photo Selected!", Toast.LENGTH_SHORT).show();
                 setPreview(selected);
             }
         });
 
+        // Cancel and dont add any pictures.
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //setResult(RESULT_CANCELED, returnIntent);
                 finish();
             }
         });
 
+        // Done; save taken images locally until trip is finished.
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Bundle extras = new Bundle();
-                //extras.putStringArrayList("imageObjectIds", imageObjectIds);
-                //returnIntent.putExtras(extras);
-                //setResult(RESULT_OK, returnIntent);
                 if(saveImagesInLocalDataStore()) {
-                    Toast.makeText(AddPhotoNoteActivity.this, photos.size() + " Photos Added!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(AddPhotoNoteActivity.this, photos.size() + " Photos Added!", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(AddPhotoNoteActivity.this, "Error:: Photos Upload Failed!", Toast.LENGTH_SHORT).show();
+                    //TODO: Retry
+                    //Toast.makeText(AddPhotoNoteActivity.this, "Error:: Photos Upload Failed!", Toast.LENGTH_SHORT).show();
                 }
                 finish();
             }
         });
 
+        // Delete selected photo.
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 photos.remove(selected);
                 notes.remove(selected);
-                //Toast.makeText(AddPhotoNoteActivity.this, photos.size()+" Photos left!", Toast.LENGTH_SHORT).show();
                 if(photos.size() == 0) {
-                    //setResult(RESULT_CANCELED, returnIntent);
                     finish();
                 } else {
                     ((BaseAdapter) picsThumbnailView.getAdapter()).notifyDataSetChanged();
@@ -154,12 +151,10 @@ public class AddPhotoNoteActivity extends Activity {
             photos.add(imageBitmap);
             notes.add("");
             ((BaseAdapter) picsThumbnailView.getAdapter()).notifyDataSetChanged();
-            //Toast.makeText(AddPhotoNoteActivity.this, photos.size()+" Photos added!", Toast.LENGTH_SHORT).show();
             selected = photos.size()-1;
             setPreview(selected);
         } else {
             if(photos.size() == 0) {
-                //setResult(RESULT_CANCELED, returnIntent);
                 finish();
             }
         }
@@ -170,6 +165,9 @@ public class AddPhotoNoteActivity extends Activity {
         imageCaption.setText(notes.get(selected));
     }
 
+    /**
+     * Launch the camera intent to take pictures.
+     */
     private void launchCameraIntent() {
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePhotoIntent.resolveActivity(getPackageManager()) != null) {
@@ -177,6 +175,10 @@ public class AddPhotoNoteActivity extends Activity {
         }
     }
 
+    /**
+     * Geotag the images and save to local datastore until they can be uploded to Parse.
+     * @return Sucess or Failure.
+     */
     private boolean saveImagesInLocalDataStore() {
         Boolean success;
 
@@ -213,6 +215,10 @@ public class AddPhotoNoteActivity extends Activity {
         return success;
     }
 
+    /**
+     * Get the current user location.
+     * @return User location or null if current location is not available.
+     */
     private ParseGeoPoint getCurrentLocation() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Location lastKnownLocation = null;

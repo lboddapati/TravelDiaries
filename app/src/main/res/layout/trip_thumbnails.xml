@@ -7,7 +7,7 @@
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:id="@+id/Trip_icon"
-        android:src="@drawable/vegas" />
+        android:src="@drawable/defaulticon" />
     <TextView
         android:layout_width="150dp"
         android:layout_height="wrap_content"

@@ -15,7 +15,7 @@
     <include
         android:layout_width="166dp"
         android:layout_height="wrap_content"
-        layout="@layout/activity_main" />
+        layout="@layout/activity_get_places" />
 
 
 </LinearLayout>

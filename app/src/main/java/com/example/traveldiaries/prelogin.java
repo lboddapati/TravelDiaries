@@ -33,20 +33,22 @@ public class prelogin extends Activity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_prelogin);
-        //final ArrayList<Bitmap> main_page= new ArrayList<Bitmap>();
-        View decorView = getWindow().getDecorView();
+
         // Hide the status bar.
-        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
+        //View decorView = getWindow().getDecorView();
+        //int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        //decorView.setSystemUiVisibility(uiOptions);
 
         // Remember that you should never show the action bar if the
         // status bar is hidden, so hide that too if necessary.
-        ActionBar actionBar = getActionBar();
-        actionBar.hide();
-        Bitmap td1 = BitmapFactory.decodeResource(getResources(), R.drawable.collage1);
-        //main_page.add(td1);
-        ImageView imageview=(ImageView) findViewById(R.id.imageview);
-        imageview.setImageBitmap(td1);
+        //ActionBar actionBar = getActionBar();
+        //actionBar.hide();
+
+        //Bitmap td1 = BitmapFactory.decodeResource(getResources(), R.drawable.startup_background);
+        //ImageView imageview=(ImageView) findViewById(R.id.imageview);
+        //imageview.setImageBitmap(td1);
+
+
         Button startButton = (Button) findViewById(R.id.button);
         startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

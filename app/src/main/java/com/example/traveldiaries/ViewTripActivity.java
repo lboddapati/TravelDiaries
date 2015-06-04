@@ -33,6 +33,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Activity to view the details of a (selected) previous trip.
+ */
 public class ViewTripActivity extends FragmentActivity {
     //TODO: Add option to view all pics at once
 
@@ -133,6 +137,11 @@ public class ViewTripActivity extends FragmentActivity {
 
     }
 
+    /**
+     * Method that matches the photos taken in a trip to the place which is
+     * closest to where the photo was taken.
+     * @throws ParseException
+     */
     private void matchPhotosToPlaces() throws ParseException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 2;  //TODO: set optimal size;
@@ -180,6 +189,11 @@ public class ViewTripActivity extends FragmentActivity {
         }
     }
 
+    /**
+     * Method to get a count of photos taken at each location.
+     * @param photosAtPlaces A List of the list of photos taken at each place.
+     * @return A list of integers which contains the number of photos taken at each place.
+     */
     private ArrayList<Integer> getPhotoCount(ArrayList<ArrayList<Bitmap>> photosAtPlaces) {
         ArrayList<Integer> photoCount = new ArrayList<Integer>();
         for(int i=0; i<names.size(); i++) {
@@ -192,6 +206,11 @@ public class ViewTripActivity extends FragmentActivity {
         return photoCount;
     }
 
+    /**
+     * Extracts the LatLngs of the places from given places JSON object.
+     * @param placesJSON The JSON Object that contains the details of the places visited.
+     * @return A list of LatLngs of the places.
+     */
     private ArrayList<LatLng> getPlacesLatLng(JSONObject placesJSON) {
         ArrayList<LatLng> places = new ArrayList<LatLng>();
         double lat;
@@ -212,6 +231,11 @@ public class ViewTripActivity extends FragmentActivity {
         return places;
     }
 
+    /**
+     * Methos that parses the given places JSONObject and extracts the
+     * details of the places into the names, address and latLngs ArrayLists.
+     * @param placesJSON The JSON Object that contains the details of the places visited.
+     */
     private void parsePlacesJSON(JSONObject placesJSON) {
         double lat;
         double lng;
@@ -253,6 +277,7 @@ public class ViewTripActivity extends FragmentActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
+        // When this option is selected, show all the photos taken in that trip.
         if (id == R.id.action_view_all_photos) {
             Intent intent;
             intent = new Intent(ViewTripActivity.this, ViewTripPhotosActivity.class);

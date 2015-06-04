@@ -4,6 +4,9 @@ package com.example.traveldiaries;
  * Created by Tonia on 5/16/15.
  */
 import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -15,14 +18,16 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.AutoCompleteTextView;
 import android.content.Intent;
 import android.widget.CompoundButton;
-import android.widget.LinearLayout;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
@@ -61,13 +66,20 @@ public class getPlacesActivity extends FragmentActivity {
     private AutoCompleteTextView atvPlaces_end;
     private AutocompletePlacesTask placesTask;
     private AutocompleteTask autoCompleteTask;
-    private Button btnStartTrip;
-    private Button btnFind;
-    private CheckBox chk_restaurants;
-    private CheckBox chk_bars;
-    private CheckBox chk_tourist;
+    private ImageButton btnStartTrip;
+    //private Button btnFind;
+    //private CheckBox chk_restaurants;
+    //private CheckBox chk_bars;
+    //private CheckBox chk_tourist;
+    private HorizontalScrollView categories;
+    private Button restaurantsBtn;
+    private Button nightLifeBtn;
+    private Button fuelBtn;
+    private Button touristBtn;
+    private Button popularBtn;
+    private Button barsBtn;
 
-    private  JSONObject routesJSON = new JSONObject();
+    private JSONObject routesJSON = new JSONObject();
     private ArrayList<LatLng> places = new ArrayList<LatLng>();
     private ArrayList<LatLng> points = new ArrayList<LatLng>();
     private ArrayList<Polyline> polylines = new ArrayList<Polyline>();
@@ -77,6 +89,9 @@ public class getPlacesActivity extends FragmentActivity {
     private boolean restaurant = false;
     private boolean tourist = false;
     private boolean bars = false;
+    private boolean nightLife = false;
+    private boolean popular = false;
+    private boolean fuel = false;
 
     private double mLatitude_start = 0;
     private double mLongitude_start = 0;
@@ -87,7 +102,7 @@ public class getPlacesActivity extends FragmentActivity {
     private ArrayList<String> listItems;
     private ArrayAdapter<String> adapter;
 
-    CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
+    /*CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             switch (buttonView.getId()) {
@@ -104,13 +119,82 @@ public class getPlacesActivity extends FragmentActivity {
                     break;
             }
         }
+    };*/
+
+    View.OnClickListener categoriesClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            boolean selected = false;
+            Button buttonView = (Button) v;
+            switch (buttonView.getId()) {
+                case R.id.popular:
+                    //Toast.makeText(getPlacesActivity.this, "popular button clicked", Toast.LENGTH_SHORT).show();
+                    popular = !(popular);
+                    selected = popular;
+                    break;
+                case R.id.restaurants:
+                    restaurant = !(restaurant);
+                    //Toast.makeText(getPlacesActivity.this, "restaurants button clicked:: "+restaurant, Toast.LENGTH_SHORT).show();
+                    selected = restaurant;
+                    break;
+                case R.id.nightLife:
+                    //Toast.makeText(getPlacesActivity.this, "nightLife button clicked", Toast.LENGTH_SHORT).show();
+                    nightLife = !(nightLife);
+                    selected = nightLife;
+                    break;
+                case R.id.bars:
+                    bars = !(bars);
+                    //Toast.makeText(getPlacesActivity.this, "bars button clicked:: "+bars, Toast.LENGTH_SHORT).show();
+                    selected = bars;
+                    break;
+                case R.id.tourist:
+                    //Toast.makeText(getPlacesActivity.this, "tourist button clicked", Toast.LENGTH_SHORT).show();
+                    tourist = !(tourist);
+                    selected = tourist;
+                    break;
+                case R.id.fuelUp:
+                    //Toast.makeText(getPlacesActivity.this, "fuelUp button clicked", Toast.LENGTH_SHORT).show();
+                    fuel = !(fuel);
+                    selected = fuel;
+                    break;
+                default:
+                    break;
+            }
+
+            if(selected) {
+                //Toast.makeText(getPlacesActivity.this, "button selected", Toast.LENGTH_SHORT).show();
+                setSelection(buttonView);
+            } else {
+                //Toast.makeText(getPlacesActivity.this, "button de selected", Toast.LENGTH_SHORT).show();
+                clearSelection(buttonView);
+            }
+
+            getPlaces();
+        }
     };
+
+    private void clearSelection(Button buttonView) {
+        int textColor = buttonView.getCurrentTextColor();
+        buttonView.setBackgroundColor(textColor);
+        buttonView.setTextColor(Color.WHITE);
+        buttonView.getCompoundDrawables()[1].clearColorFilter();
+    }
+
+    private void setSelection(Button buttonView) {
+        int buttonColor = ((ColorDrawable) buttonView.getBackground()).getColor();
+        buttonView.getCompoundDrawables()[1].setColorFilter(buttonColor, PorterDuff.Mode.MULTIPLY);
+        buttonView.setTextColor(buttonColor);
+        buttonView.setBackgroundColor(Color.GRAY);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_get_places);
+
+        final int STATUS_BAR_COLOR = getResources().getColor(R.color.Blue);
+        getWindow().setStatusBarColor(STATUS_BAR_COLOR);
 
         YOUR_API_KEY = getResources().getString(R.string.google_places_key);
         Log.d("API_KEY", YOUR_API_KEY);
@@ -120,15 +204,25 @@ public class getPlacesActivity extends FragmentActivity {
             StrictMode.setThreadPolicy(policy);
         }
 
-        btnStartTrip = (Button) findViewById(R.id.btn_StartTrip);
-        btnFind = (Button) findViewById(R.id.btn_find);
-        btnFind.setEnabled(false);
+        btnStartTrip = (ImageButton) findViewById(R.id.btn_StartTrip);
+        btnStartTrip.setVisibility(View.GONE);
+        categories = (HorizontalScrollView) findViewById(R.id.categories);
+        categories.setVisibility(View.GONE);
+        listView = (ListView) findViewById(R.id.listView2);
+        listView.setVisibility(View.GONE);
+        //btnFind = (Button) findViewById(R.id.btn_find);
+        //btnFind.setEnabled(false);
         atvPlaces_start = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_start);
         atvPlaces_end = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_end);
-        btnStartTrip.setVisibility(View.INVISIBLE);
-        chk_tourist = (CheckBox) findViewById(R.id.chk_tourist);
-        chk_restaurants = (CheckBox) findViewById(R.id.chk_restaurants);
-        chk_bars = (CheckBox) findViewById(R.id.chk_bars);
+        //chk_tourist = (CheckBox) findViewById(R.id.chk_tourist);
+        //chk_restaurants = (CheckBox) findViewById(R.id.chk_restaurants);
+        //chk_bars = (CheckBox) findViewById(R.id.chk_bars);
+        restaurantsBtn = (Button) findViewById(R.id.restaurants);
+        touristBtn = (Button) findViewById(R.id.tourist);
+        fuelBtn = (Button) findViewById(R.id.fuelUp);
+        popularBtn = (Button) findViewById(R.id.popular);
+        nightLifeBtn = (Button) findViewById(R.id.nightLife);
+        barsBtn = (Button) findViewById(R.id.bars);
 
         atvPlaces_start.addTextChangedListener(new TextWatcher() {
             @Override
@@ -145,7 +239,11 @@ public class getPlacesActivity extends FragmentActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if(atvPlaces_start.getText().toString().isEmpty()) {
-                    btnFind.setEnabled(false);
+                    //btnFind.setEnabled(false);
+                    //categories.setVisibility(View.GONE);
+                    setVisibility(categories, View.GONE);
+                    clearPlaces();
+                    clearAllSelections();
                 }
             }
         });
@@ -160,9 +258,16 @@ public class getPlacesActivity extends FragmentActivity {
                 System.out.println(hm.get("place_id") + "Place");
                 FunctionLatLong(hm.get("place_id"));
                 if(atvPlaces_end.getText().toString().isEmpty()) {
-                    btnFind.setEnabled(false);
+                    //btnFind.setEnabled(false);
+                    //categories.setVisibility(View.GONE);
+                    setVisibility(categories, View.GONE);
+                    clearPlaces();
+                    clearAllSelections();
                 } else {
-                    btnFind.setEnabled(true);
+                    //btnFind.setEnabled(true);
+                    //categories.setVisibility(View.VISIBLE);
+                    setVisibility(categories, View.VISIBLE);
+                    getPlaces();
                 }
             }
         });
@@ -182,7 +287,11 @@ public class getPlacesActivity extends FragmentActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if(atvPlaces_end.getText().toString().isEmpty()) {
-                    btnFind.setEnabled(false);
+                    //btnFind.setEnabled(false);
+                    //categories.setVisibility(View.GONE);
+                    setVisibility(categories, View.GONE);
+                    clearPlaces();
+                    clearAllSelections();
                 }
             }
         });
@@ -197,14 +306,20 @@ public class getPlacesActivity extends FragmentActivity {
                 System.out.println(hm.get("place_id") + "Place");
                 FunctionLatLong_end(hm.get("place_id"));
                 if(atvPlaces_start.getText().toString().isEmpty()) {
-                    btnFind.setEnabled(false);
+                    //btnFind.setEnabled(false);
+                    //categories.setVisibility(View.GONE);
+                    setVisibility(categories, View.GONE);
+                    clearPlaces();
+                    clearAllSelections();
                 } else {
-                    btnFind.setEnabled(true);
+                    //btnFind.setEnabled(true);
+                    //categories.setVisibility(View.VISIBLE);
+                    setVisibility(categories, View.VISIBLE);
+                    getPlaces();
                 }
             }
         });
 
-        listView = (ListView) findViewById(R.id.listView2);
         listItems = new ArrayList<String>();
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listItems);
         listView.setAdapter(adapter);
@@ -226,7 +341,7 @@ public class getPlacesActivity extends FragmentActivity {
             // Getting Google Map
             mGoogleMap = fragment.getMap();
 
-            // Setting click event lister for the find button
+            /*// Setting click event lister for the find button
             btnFind.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -266,7 +381,7 @@ public class getPlacesActivity extends FragmentActivity {
                     }
 
                 }
-            });
+            });*/
 
 
             // Enabling MyLocation in Google Map
@@ -304,9 +419,103 @@ public class getPlacesActivity extends FragmentActivity {
 
         });
 
-        chk_bars.setOnCheckedChangeListener(checkBoxListener);
-        chk_restaurants.setOnCheckedChangeListener(checkBoxListener);
-        chk_tourist.setOnCheckedChangeListener(checkBoxListener);
+        //chk_bars.setOnCheckedChangeListener(checkBoxListener);
+        //chk_restaurants.setOnCheckedChangeListener(checkBoxListener);
+        //chk_tourist.setOnCheckedChangeListener(checkBoxListener);
+
+        restaurantsBtn.setOnClickListener(categoriesClickListener);
+        popularBtn.setOnClickListener(categoriesClickListener);
+        fuelBtn.setOnClickListener(categoriesClickListener);
+        nightLifeBtn.setOnClickListener(categoriesClickListener);
+        touristBtn.setOnClickListener(categoriesClickListener);
+        barsBtn.setOnClickListener(categoriesClickListener);
+    }
+
+    private void clearAllSelections() {
+        if(popular) {
+            popular = false;
+            clearSelection(popularBtn);
+        }
+        if(restaurant) {
+            restaurant = false;
+            clearSelection(restaurantsBtn);
+        }
+        if(nightLife) {
+            nightLife = false;
+            clearSelection(nightLifeBtn);
+        }
+        if(bars) {
+            bars = false;
+            clearSelection(barsBtn);
+        }
+        if(fuel) {
+            fuel = false;
+            clearSelection(fuelBtn);
+        }
+        if(tourist) {
+            tourist = false;
+            clearSelection(touristBtn);
+        }
+    }
+
+    private void clearPlaces() {
+        mGoogleMap.clear();
+        listItems.clear();
+        places.clear();
+        selectedPlacesNames.clear();
+        selectedPlacesAddress.clear();
+        adapter.notifyDataSetChanged();
+        setVisibility(listView, View.GONE);
+    }
+
+    private void setVisibility(View view, int visibility) {
+        if (view.getVisibility() != visibility) {
+            Animation animation;
+            if(visibility == View.VISIBLE) {
+                animation = AnimationUtils.loadAnimation(getPlacesActivity.this, R.anim.swipe_top_to_bottom);
+                view.startAnimation(animation);
+                view.setVisibility(visibility);
+            } else if (visibility == View.GONE) {
+                animation = AnimationUtils.loadAnimation(getPlacesActivity.this, R.anim.swipe_bottom_to_top);
+                view.startAnimation(animation);
+                view.setVisibility(visibility);
+            }
+        }
+    }
+
+    private void getPlaces() {
+        clearPlaces();
+
+        setParameters(mLatitude_start, mLongitude_start, mLatitude_end, mLongitude_end);
+
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(places.get(0), 11.0f));
+        // Differentiate start and end location markers with different colors. Start = Green, End = Red.
+        mGoogleMap.addMarker(new MarkerOptions().position(places.get(0))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        mGoogleMap.addMarker(new MarkerOptions().position(places.get(1))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+
+        routesJSON = MapHelperClass.getRoute(places);
+        if(routesJSON == null) {
+            //Toast.makeText(this, "No route found", Toast.LENGTH_LONG).show();
+        } else {
+            btnStartTrip.setVisibility(View.VISIBLE);
+
+            polylines = MapHelperClass.drawRoute(routesJSON, mGoogleMap);
+
+
+            JSONObject overviewPolyline = null;
+            try {
+                overviewPolyline = routesJSON.getJSONObject("overview_polyline");
+                String encodedPolylines = overviewPolyline.getString("points");
+                points = MapHelperClass.decodePolylines(encodedPolylines);
+                searchPlaceTypes(points);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
     public void searchPlaceTypes(ArrayList<LatLng> points){
@@ -315,18 +524,28 @@ public class getPlacesActivity extends FragmentActivity {
             type.append("restaurant%7Ccafe%7C");
         if (bars)
             type.append("bar%7C");
+        //if (tourist)
+        //    type.append("zoo%7Cmuseum%7Cpark%7Cplace_of_worship%7C");
+        if (nightLife)
+            type.append("night_club%7Ccasino%7C");
+        if(fuel)
+            type.append("gas_station%7C");
+
+        StringBuilder keyword = new StringBuilder("&keyword=");
         if (tourist)
-            type.append("zoo%7Cmuseum%7Cpark%7C");
+            keyword.append("tourist%7C");
+        if (popular)
+            keyword.append("popular%7Clocal+attractions%7C");
 
         StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
         url.append("radius=1000");
         url.append("&sensor=true");
         url.append("&key="+YOUR_API_KEY);
-        if(restaurant || bars || tourist)
-            //url.append(type.deleteCharAt(type.length()-1));
+        if(restaurant || bars || nightLife || fuel)
             url.append(type.substring(0,type.lastIndexOf("%7C")));
-        if(restaurant || bars)
-            url.append("&opennow=true");
+        if(tourist || popular)
+            url.append(keyword.substring(0, keyword.lastIndexOf("%7C")));
+        url.append("&opennow=true");
 
         int size = points.size()/20;
         int i=0;
@@ -357,6 +576,7 @@ public class getPlacesActivity extends FragmentActivity {
 
         }
     }
+
     public void setParameters(Double lat_start, Double long_start, Double lat_end, Double long_end) {
         System.out.println("In set");
 
@@ -412,6 +632,7 @@ public class getPlacesActivity extends FragmentActivity {
         }
 
     }
+
     private class parserLatLongTask extends AsyncTask<String, Integer, List<HashMap<String, Double>>> {
 
         JSONObject jObject;
@@ -786,6 +1007,12 @@ public class getPlacesActivity extends FragmentActivity {
                     }
 
                     adapter.notifyDataSetChanged();
+
+                    if(listItems.isEmpty()) {
+                        setVisibility(listView, View.GONE);
+                    } else {
+                        setVisibility(listView, View.VISIBLE);
+                    }
 
                     //Clear old route
                     for (Polyline line : polylines)

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- the theme applied to the application or activity -->
+    <style name="RedActionBarTheme"
+        parent="@android:style/Theme.Material.Light">
+        <item name="android:colorPrimary">@color/Red</item>
+        <item name="android:colorPrimaryDark">@color/DarkRed</item>
+        <item name="android:textColorPrimary">@color/White</item>
+        <item name="android:textColorSecondary">@color/Black</item>
+    </style>
+
+    <!-- ActionBar styles -->
+    <style name="RedActionBar"
+        parent="@android:style/Widget.Holo.Light.ActionBar.Solid">
+        <item name="android:background">@color/OrangeRed</item>
+        <item name="android:statusBarColor">@color/DarkOrangeRed</item>
+        <item name="android:titleTextStyle">@style/MyActionBarTitleText</item>
+    </style>
+
+    <!-- ActionBar title text -->
+    <style name="MyActionBarTitleText"
+        parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/White</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily"></item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginLeft">20dp</item>
+        <item name="android:textAlignment">center</item>
+    </style>
+
+    <style name="BlackTextAppearance">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+</resources>

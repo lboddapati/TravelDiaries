@@ -1,6 +1,7 @@
 package com.example.traveldiaries;
 import android.app.Activity;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -32,6 +33,10 @@ public class LoginActivity extends Activity {
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        //getActionBar().hide();
+
+        final int STATUS_BAR_COLOR = getResources().getColor(R.color.DarkerLimeGreen);
+        getWindow().setStatusBarColor(STATUS_BAR_COLOR);
 
         usernameView = (EditText) findViewById(R.id.username);
         passwordView = (EditText) findViewById(R.id.password);
@@ -62,7 +67,7 @@ public class LoginActivity extends Activity {
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    public boolean validate() {
+    private boolean validate() {
         // Reset errors.
         usernameView.setError(null);
         passwordView.setError(null);
@@ -103,12 +108,18 @@ public class LoginActivity extends Activity {
         return !cancel;
     }
 
-    public void SignedIn() {
+    /**
+     * Once the user successfully logs in / signs up, redirect to PreviousTrip screen.
+     */
+    private void SignedIn() {
         Intent intent = new Intent(LoginActivity.this, PreviousTrip.class);
         startActivity(intent);
         finish();
     }
 
+    /**
+     * Attempt to Login the user.
+     */
     private void login() {
         final String userID = usernameView.getText().toString();
         final String password = passwordView.getText().toString();
@@ -136,6 +147,9 @@ public class LoginActivity extends Activity {
         });
     }
 
+    /**
+     * Attempt to sign up new user.
+     */
     private void register() {
         final String userID = usernameView.getText().toString();
         final String password = passwordView.getText().toString();
@@ -165,10 +179,21 @@ public class LoginActivity extends Activity {
         });
     }
 
+    /**
+     * Check if username is valid (i.e does not contain spaces
+     * @param username The user input username to check.
+     * @return True if valid. False if invalid.
+     */
     private boolean isUserIdValid(String username) {
         return !username.contains(" ");
     }
 
+    /**
+     * Check if password is valid (i.e longer than 4 characters
+     * and does not contain spaces.
+     * @param password The user input password to check.
+     * @return True if valid. False if invalid.
+     */
     private boolean isPasswordValid(String password) {
         return (password.length() > 4 && !password.contains(" "));
     }

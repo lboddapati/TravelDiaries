@@ -1,9 +1,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.traveldiaries.PreviousTrip">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/action_new_trip" android:title="@string/action_new_trip"
-        android:orderInCategory="100" app:showAsAction="always" android:icon="@android:drawable/ic_input_add"/>
-    <item android:id="@+id/action_sign_out" android:title="@string/action_sign_out"
-        android:orderInCategory="101" app:showAsAction="never"/>
+        android:orderInCategory="100" android:showAsAction="always" app:showAsAction="always"
+        android:icon="@drawable/ic_action_add"/>
+    <item android:id="@+id/action_sign_out" android:title="@string/action_sign_out" android:icon="@android:drawable/ic_lock_power_off"
+        android:orderInCategory="101" android:showAsAction="always" app:showAsAction="always"/>
 </menu>

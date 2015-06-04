@@ -3,9 +3,9 @@
     <!-- Strings related to login -->
     <string name="prompt_username">Username</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in">Log In</string>
     <string name="action_sign_up">Create Account</string>
-    <string name="action_sign_out">Sign Out</string>
+    <string name="action_sign_out">Log Out</string>
 
     <string name="error_invalid_username">Username cannot have spaces</string>
     <string name="error_invalid_password">Password must be atleast 5 chars long and must not contain spaces</string>

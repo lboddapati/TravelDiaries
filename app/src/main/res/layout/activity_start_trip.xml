@@ -37,7 +37,7 @@
         android:elevation="@dimen/elevation_high"
         android:src="@android:drawable/ic_menu_camera"
         android:tint="@android:color/white"
-        android:background="@drawable/circle"
+        android:background="@drawable/red_circle"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:visibility="visible"

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:id="@+id/main_layout">
+
+    <com.example.traveldiaries.CustomAutoCompleteTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:id="@+id/autoCompleteTextView_start"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:elevation="24dp"
+        android:hint="@string/From"
+        android:background="@drawable/rectangle_edit_text_background"/>
+
+    <com.example.traveldiaries.CustomAutoCompleteTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:id="@+id/autoCompleteTextView_end"
+        android:layout_below="@+id/autoCompleteTextView_start"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="5dp"
+        android:elevation="24dp"
+        android:hint="@string/To"
+        android:background="@drawable/rectangle_edit_text_background"/>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/categories"
+        android:elevation="24dp"
+        android:layout_below="@id/autoCompleteTextView_end"
+        android:background="@color/White"
+        android:layout_marginTop="5dp"
+        android:visibility="visible"
+        android:scrollbars="none"
+        android:foregroundGravity="center"
+        android:padding="5dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:orientation="horizontal" >
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            style="?android:borderlessButtonStyle"
+            android:id="@+id/popular"
+            android:background="@color/OrangeRed"
+            android:layout_marginRight="10dp"
+            android:drawableTop="@drawable/ic_action_star"
+            android:text="Popular"
+            android:textAllCaps="false"
+            android:textSize="9sp"
+            android:textColor="@color/White"/>
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            style="?android:borderlessButtonStyle"
+            android:id="@+id/restaurants"
+            android:background="@color/BlueViolet"
+            android:layout_marginRight="10dp"
+            android:drawableTop="@drawable/ic_action_restaurant"
+            android:text="Restaurants"
+            android:textAllCaps="false"
+            android:textSize="9sp"
+            android:textColor="@color/White"/>
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            style="?android:borderlessButtonStyle"
+            android:id="@+id/nightLife"
+            android:background="@color/Amber"
+            android:layout_marginRight="10dp"
+            android:paddingTop="2dp"
+            android:drawableTop="@drawable/night_life"
+            android:text="Night Life"
+            android:textAllCaps="false"
+            android:textSize="9sp"
+            android:textColor="@color/White"/>
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            style="?android:borderlessButtonStyle"
+            android:id="@+id/bars"
+            android:background="@color/DarkTurquoise"
+            android:layout_marginRight="10dp"
+            android:paddingTop="2dp"
+            android:drawableTop="@drawable/ic_bar"
+            android:text="Bars &amp; Pubs"
+            android:textAllCaps="false"
+            android:textSize="9sp"
+            android:textColor="@color/White"/>
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            style="?android:borderlessButtonStyle"
+            android:id="@+id/tourist"
+            android:background="@color/LimeGreen"
+            android:layout_marginRight="10dp"
+            android:paddingTop="2dp"
+            android:drawableTop="@drawable/ic_tourist"
+            android:text="Tourist"
+            android:textAllCaps="false"
+            android:textSize="9sp"
+            android:textColor="@color/White"/>
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            style="?android:borderlessButtonStyle"
+            android:id="@+id/fuelUp"
+            android:background="@color/Fuchsia"
+            android:layout_marginRight="10dp"
+            android:drawableTop="@drawable/ic_action_maps_local_gas_station"
+            android:text="Fuel Up"
+            android:textAllCaps="false"
+            android:textSize="9sp"
+            android:textColor="@color/White"/>
+     </LinearLayout>
+    </HorizontalScrollView>
+
+    <!--<CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tourist"
+        android:id="@+id/chk_tourist"
+        android:checked="false"
+        android:visibility="gone"
+        android:layout_below="@+id/autoCompleteTextView_end"
+        android:layout_alignParentStart="true"
+        android:elevation="24dp"
+        android:layout_alignParentLeft="true"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Restaurants"
+        android:id="@+id/chk_restaurants"
+        android:checked="false"
+        android:visibility="gone"
+        android:layout_alignTop="@+id/chk_tourist"
+        android:layout_toEndOf="@+id/chk_tourist"
+        android:elevation="24dp"
+        android:layout_toRightOf="@+id/chk_tourist"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bars"
+        android:id="@+id/chk_bars"
+        android:checked="false"
+        android:visibility="gone"
+        android:elevation="24dp"
+        android:layout_alignTop="@+id/chk_restaurants"
+        android:layout_toEndOf="@+id/chk_restaurants"
+        android:layout_toRightOf="@+id/chk_restaurants"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="24dp"
+        android:text="Find Places"
+        android:id="@+id/btn_find"
+        android:visibility="gone"
+        android:layout_marginLeft="10dp"
+        android:layout_toEndOf="@+id/chk_bars"
+        android:layout_toRightOf="@+id/chk_bars"
+        android:layout_alignTop="@id/chk_bars"/>-->
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:elevation="24dp"
+        android:layout_marginTop="5dp"
+        android:id="@+id/listView2"
+        android:layout_below="@id/categories"
+        android:background="@color/White"
+        android:visibility="visible" />
+        <!--android:layout_below="@+id/chk_tourist"
+        android:layout_alignStart="@id/chk_tourist"
+        android:layout_alignEnd="@id/chk_bars" />-->
+
+    <ImageButton
+        android:layout_width="@dimen/round_button_diameter"
+        android:layout_height="@dimen/round_button_diameter"
+        android:elevation="34dp"
+        android:visibility="visible"
+        android:text="Start Trip"
+        android:id="@+id/btn_StartTrip"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:src="@drawable/ic_action_navigate"
+        android:tint="@android:color/white"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/blue_circle"/>
+
+    <fragment
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="com.google.android.gms.maps.MapFragment"
+        android:id="@+id/map"
+        tools:context="com.example.traveldiaries.getPlacesActivity"
+        class="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_below="@id/listView2"/>
+        <!--android:layout_below="@+id/listView2"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="20dp"
+        android:layout_alignParentBottom="true"/>-->
+
+</RelativeLayout>

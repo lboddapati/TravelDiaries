@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/imageview"
-        android:src="@drawable/collage1"
+        android:src="@drawable/startup_background"
         android:layout_gravity="center_horizontal"
         android:layout_marginLeft="0dp"
         android:layout_marginTop="0dp"
