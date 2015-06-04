@@ -6,7 +6,8 @@
     <dimen name="small_horizontal_margin">5dp</dimen>
     <dimen name="small_vertical_margin">5dp</dimen>
     <dimen name="round_button_radius">12dp</dimen>
-    <dimen name="round_button_diameter">50dp</dimen>
+    <dimen name="small_round_button_diameter">50dp</dimen>
+    <dimen name="big_round_button_diameter">70dp</dimen>
     <dimen name="elevation_low">5dp</dimen>
     <dimen name="elevation_med">10dp</dimen>
     <dimen name="elevation_high">15dp</dimen>

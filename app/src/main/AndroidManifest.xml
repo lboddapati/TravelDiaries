@@ -37,7 +37,8 @@
 
         <activity
             android:name=".LoginActivity"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar">
+            android:theme="@style/GreenStatusBar.NoActionBar" >
+            <!--android:theme="@android:style/Theme.Material.Light.NoActionBar">-->
         </activity>
         <activity
             android:theme="@style/RedActionBarTheme"
@@ -46,12 +47,12 @@
         </activity>
         <activity
             android:name=".StartTripActivity"
-            android:alwaysRetainTaskState="true"
             android:label="@string/title_activity_map_trip" >
         </activity>
         <activity
             android:name=".AddPhotoNoteActivity"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" >
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" >
+            <!--android:theme="@android:style/Theme.Material.Light.NoActionBar" >-->
         </activity>
         <activity
             android:name=".ViewTripActivity"
@@ -66,10 +67,12 @@
         </activity>
         <activity
             android:name=".getPlacesActivity"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+            android:theme="@style/BlueStatusBar.NoActionBar" />
+            <!--android:theme="@android:style/Theme.Material.Light.NoActionBar" />-->
         <activity
             android:name=".prelogin"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar.Fullscreen" >
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" >
+            <!--android:theme="@android:style/Theme.Material.Light.NoActionBar.Fullscreen" >-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

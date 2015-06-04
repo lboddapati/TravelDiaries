@@ -193,8 +193,8 @@ public class getPlacesActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_places);
 
-        final int STATUS_BAR_COLOR = getResources().getColor(R.color.Blue);
-        getWindow().setStatusBarColor(STATUS_BAR_COLOR);
+        //final int STATUS_BAR_COLOR = getResources().getColor(R.color.Blue);
+        //getWindow().setStatusBarColor(STATUS_BAR_COLOR);
 
         YOUR_API_KEY = getResources().getString(R.string.google_places_key);
         Log.d("API_KEY", YOUR_API_KEY);
@@ -497,6 +497,7 @@ public class getPlacesActivity extends FragmentActivity {
 
         routesJSON = MapHelperClass.getRoute(places);
         if(routesJSON == null) {
+            btnStartTrip.setVisibility(View.GONE);
             //Toast.makeText(this, "No route found", Toast.LENGTH_LONG).show();
         } else {
             btnStartTrip.setVisibility(View.VISIBLE);

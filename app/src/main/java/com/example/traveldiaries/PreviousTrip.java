@@ -133,7 +133,7 @@ public class PreviousTrip extends Activity {
             popupMessage.setText("No Trips taken yet.\nStart a new trip today!");
             popupMessage.setGravity(Gravity.CENTER);
             popupMessage.setPadding(30, 30, 30, 30);
-            popupMessage.setElevation(30);
+            //popupMessage.setElevation(30);
             popupMessage.setBackgroundColor(getResources().getColor(R.color.Red));
             popupMessage.setTextColor(Color.WHITE);
             PopupWindow popupWindow = new PopupWindow(popupMessage, LinearLayout.LayoutParams.WRAP_CONTENT

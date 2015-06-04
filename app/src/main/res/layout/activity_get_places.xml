@@ -15,6 +15,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:elevation="24dp"
+        android:singleLine="true"
         android:hint="@string/From"
         android:background="@drawable/rectangle_edit_text_background"/>
 
@@ -28,6 +29,7 @@
         android:layout_alignParentLeft="true"
         android:layout_marginTop="5dp"
         android:elevation="24dp"
+        android:singleLine="true"
         android:hint="@string/To"
         android:background="@drawable/rectangle_edit_text_background"/>
 
@@ -50,8 +52,8 @@
         android:paddingRight="5dp"
         android:orientation="horizontal" >
         <Button
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
             style="?android:borderlessButtonStyle"
             android:id="@+id/popular"
             android:background="@color/OrangeRed"
@@ -62,8 +64,8 @@
             android:textSize="9sp"
             android:textColor="@color/White"/>
         <Button
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
             style="?android:borderlessButtonStyle"
             android:id="@+id/restaurants"
             android:background="@color/BlueViolet"
@@ -74,8 +76,8 @@
             android:textSize="9sp"
             android:textColor="@color/White"/>
         <Button
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
             style="?android:borderlessButtonStyle"
             android:id="@+id/nightLife"
             android:background="@color/Amber"
@@ -87,8 +89,8 @@
             android:textSize="9sp"
             android:textColor="@color/White"/>
         <Button
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
             style="?android:borderlessButtonStyle"
             android:id="@+id/bars"
             android:background="@color/DarkTurquoise"
@@ -100,8 +102,8 @@
             android:textSize="9sp"
             android:textColor="@color/White"/>
         <Button
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
             style="?android:borderlessButtonStyle"
             android:id="@+id/tourist"
             android:background="@color/LimeGreen"
@@ -113,12 +115,11 @@
             android:textSize="9sp"
             android:textColor="@color/White"/>
         <Button
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
             style="?android:borderlessButtonStyle"
             android:id="@+id/fuelUp"
             android:background="@color/Fuchsia"
-            android:layout_marginRight="10dp"
             android:drawableTop="@drawable/ic_action_maps_local_gas_station"
             android:text="Fuel Up"
             android:textAllCaps="false"
@@ -188,20 +189,6 @@
         android:layout_alignStart="@id/chk_tourist"
         android:layout_alignEnd="@id/chk_bars" />-->
 
-    <ImageButton
-        android:layout_width="@dimen/round_button_diameter"
-        android:layout_height="@dimen/round_button_diameter"
-        android:elevation="34dp"
-        android:visibility="visible"
-        android:text="Start Trip"
-        android:id="@+id/btn_StartTrip"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:src="@drawable/ic_action_navigate"
-        android:tint="@android:color/white"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="10dp"
-        android:background="@drawable/blue_circle"/>
 
     <fragment
         xmlns:tools="http://schemas.android.com/tools"
@@ -216,5 +203,20 @@
         android:layout_alignParentLeft="true"
         android:layout_marginTop="20dp"
         android:layout_alignParentBottom="true"/>-->
+    <ImageButton
+        android:layout_width="@dimen/small_round_button_diameter"
+        android:layout_height="@dimen/small_round_button_diameter"
+        android:elevation="34dp"
+        android:visibility="visible"
+        android:text="Start Trip"
+        android:id="@+id/btn_StartTrip"
+        android:src="@drawable/ic_action_navigate"
+        android:tint="@android:color/white"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_below="@id/listView2"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/blue_circle"/>
 
 </RelativeLayout>

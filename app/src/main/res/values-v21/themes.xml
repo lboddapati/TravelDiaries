@@ -2,8 +2,9 @@
 <resources>
     <!-- the theme applied to the application or activity -->
     <style name="RedActionBarTheme"
-        parent="@android:style/Theme.Holo.Light">
-        <item name="android:actionBarStyle">@style/RedActionBar</item>
+        parent="@android:style/Theme.Material.Light">
+        <item name="android:colorPrimary">@color/Red</item>
+        <item name="android:colorPrimaryDark">@color/DarkRed</item>
         <item name="android:textColorPrimary">@color/White</item>
         <item name="android:textColorSecondary">@color/Black</item>
     </style>
@@ -11,22 +12,19 @@
     <!-- ActionBar styles -->
     <style name="RedActionBar"
         parent="@android:style/Widget.Holo.Light.ActionBar.Solid">
-        <item name="android:background">@color/Red</item>
-        <item name="android:windowBackground">@color/DarkRed</item>
+        <item name="android:background">@color/OrangeRed</item>
+        <item name="android:statusBarColor">@color/DarkOrangeRed</item>
         <item name="android:titleTextStyle">@style/MyActionBarTitleText</item>
-        <item name="android:displayOptions">showHome|homeAsUp|showTitle</item>
-        <item name="displayOptions">showHome|homeAsUp|showTitle</item>
-        <item name="android:icon">@android:color/transparent</item>
     </style>
 
     <style name="GreenStatusBar.NoActionBar"
-        parent="@android:style/Theme.Holo.Light.NoActionBar">
-        <item name="android:windowBackground">@color/DarkerLimeGreen</item>
+        parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimaryDark">@color/DarkerLimeGreen</item>
     </style>
 
     <style name="BlueStatusBar.NoActionBar"
-        parent="@android:style/Theme.Holo.Light.NoActionBar">
-        <item name="android:windowBackground">@color/Blue</item>
+        parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimaryDark">@color/Blue</item>
     </style>
 
     <!-- ActionBar title text -->
@@ -35,8 +33,10 @@
         <item name="android:textColor">@color/White</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily"></item>
         <item name="android:gravity">center</item>
         <item name="android:layout_marginLeft">20dp</item>
+        <item name="android:textAlignment">center</item>
     </style>
 
     <style name="BlackTextAppearance">

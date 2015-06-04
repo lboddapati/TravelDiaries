@@ -41,6 +41,7 @@
 <color name="LightRed">#bfff0000</color>
 <color name="Red">#FF0000</color>
 <color name="DarkRed">#E00000</color>
+<color name="TranslucentRed">#c0ff0000</color>
 <color name="OldLace">#FDF5E6</color>
 <color name="LightGoldenrodYellow">#FAFAD2</color>
 <color name="Linen">#FAF0E6</color>
