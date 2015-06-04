@@ -22,4 +22,7 @@
     <string name="hello_square">Hello Square World!</string>
     <string name="action_view_all_photos">View all photos</string>
 
+    <string name="title_activity_get_place_types">getPlaceTypesActivity</string>
+
+
 </resources>

@@ -3,8 +3,11 @@ package com.example.traveldiaries;
 /**
  * Created by Tonia on 5/16/15.
  */
+import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
@@ -16,12 +19,15 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -31,6 +37,7 @@ import android.widget.Button;
 import android.widget.AutoCompleteTextView;
 import android.content.Intent;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -84,7 +91,7 @@ public class getPlacesActivity extends FragmentActivity {
     private Button popularBtn;
     private Button barsBtn;
 
-    private JSONObject routesJSON = new JSONObject();
+    private JSONObject routesJSON;// = new JSONObject();
     private ArrayList<LatLng> places = new ArrayList<LatLng>();
     private ArrayList<LatLng> points = new ArrayList<LatLng>();
     private ArrayList<Polyline> polylines = new ArrayList<Polyline>();
@@ -197,7 +204,7 @@ public class getPlacesActivity extends FragmentActivity {
 
         super.onCreate(savedInstanceState);
 
-        if(!isNetworkAvailable()) {
+        if (!isNetworkAvailable()) {
             setContentView(R.layout.no_network_error);
             Button refreshButton = (Button) findViewById(R.id.refresh);
             refreshButton.setOnClickListener(new View.OnClickListener() {
@@ -262,6 +269,11 @@ public class getPlacesActivity extends FragmentActivity {
                         btnStartTrip.setVisibility(View.GONE);
                         clearPlaces();
                         clearAllSelections();
+                    } else {
+                        if (atvPlaces_end.getText().toString() == atvPlaces_start.getText().toString()) {
+                            Toast toast = Toast.makeText(getBaseContext(), "Both origin and destination are same. Please change your selection!", Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
                     }
                 }
             });
@@ -348,32 +360,65 @@ public class getPlacesActivity extends FragmentActivity {
             // set up the map
             setUpMapIfNeeded();
 
-            btnStartTrip.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(getApplicationContext(), StartTripActivity.class);
-                    intent.putParcelableArrayListExtra("latLngs", places);
-                    intent.putStringArrayListExtra("names", selectedPlacesNames);
-                    intent.putStringArrayListExtra("address", selectedPlacesAddress);
-                    intent.putExtra("route", routesJSON.toString());
-                    startActivity(intent);
-                    finish();
-                }
-
-            });
-
             //chk_bars.setOnCheckedChangeListener(checkBoxListener);
             //chk_restaurants.setOnCheckedChangeListener(checkBoxListener);
             //chk_tourist.setOnCheckedChangeListener(checkBoxListener);
 
-            restaurantsBtn.setOnClickListener(categoriesClickListener);
-            popularBtn.setOnClickListener(categoriesClickListener);
-            fuelBtn.setOnClickListener(categoriesClickListener);
-            nightLifeBtn.setOnClickListener(categoriesClickListener);
-            touristBtn.setOnClickListener(categoriesClickListener);
-            barsBtn.setOnClickListener(categoriesClickListener);
-        }
+
+        btnStartTrip.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+
+                View view = View.inflate(getPlacesActivity.this, R.layout.dialogbox, null);
+
+                final AlertDialog.Builder dialogBox = new AlertDialog.Builder(getPlacesActivity.this);
+                dialogBox.setTitle("Trip Name");
+                dialogBox.setView(view);
+
+                final EditText input = (EditText) view.findViewById(R.id.dialogboxText);
+                dialogBox.setPositiveButton("Proceeed", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int id) {
+                        String tripName = input.getText().toString();
+                        if (tripName == "") {
+                            input.setError("Trip Name cannot be empty. Please enter some text");
+                        } else {
+                            Intent intent = new Intent(getApplicationContext(), StartTripActivity.class);
+                            intent.putParcelableArrayListExtra("latLngs", places);
+                            intent.putStringArrayListExtra("names", selectedPlacesNames);
+                            intent.putStringArrayListExtra("address", selectedPlacesAddress);
+                            intent.putExtra("route", routesJSON.toString());
+                            intent.putExtra("tripName", tripName);
+                            startActivity(intent);
+                            finish();
+                        }
+
+                    }
+                });
+                dialogBox.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int id) {
+                        dialogInterface.cancel();
+                    }
+
+                });
+                dialogBox.create().show();
+            }
+
+        });
+
+        //chk_bars.setOnCheckedChangeListener(checkBoxListener);
+        //chk_restaurants.setOnCheckedChangeListener(checkBoxListener);
+        //chk_tourist.setOnCheckedChangeListener(checkBoxListener);
+
+        restaurantsBtn.setOnClickListener(categoriesClickListener);
+        popularBtn.setOnClickListener(categoriesClickListener);
+        fuelBtn.setOnClickListener(categoriesClickListener);
+        nightLifeBtn.setOnClickListener(categoriesClickListener);
+        touristBtn.setOnClickListener(categoriesClickListener);
+        barsBtn.setOnClickListener(categoriesClickListener);
+    }
     }
 
     private void clearAllSelections() {
@@ -484,7 +529,7 @@ public class getPlacesActivity extends FragmentActivity {
             keyword.append("popular%7Clocal+attractions%7C");
 
         StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-        url.append("radius=1000");
+        url.append("radius=3000");
         url.append("&sensor=true");
         url.append("&key="+YOUR_API_KEY);
         if(restaurant || bars || nightLife || fuel)

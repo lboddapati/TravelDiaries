@@ -50,7 +50,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
     private GoogleMap mMap;
     private ParseObject trip;
     private ParseUser user;
-    private String tripname = "SomeTrip"; //TODO: Change to actual trip name;
+    private String tripname;// = "SomeTrip"; //TODO: Change to actual trip name;
 
     private ArrayList<String> names;
     private ArrayList<String> address;
@@ -92,6 +92,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
         latLngs = intent.getParcelableArrayListExtra("latLngs");
         names = intent.getStringArrayListExtra("names");
         address = intent.getStringArrayListExtra("address");
+        tripname = intent.getStringExtra("tripName");
         try {
             route = new JSONObject(intent.getStringExtra("route"));
         } catch (JSONException e) {
@@ -222,7 +223,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if(e == null) {
-                    Log.d("UPLOADING IMAGES TO CLOUD", tripname+" - FOUND :: "+parseObjects.size());
+                    Log.d("UPLOADING IMAGES", tripname+" - FOUND :: "+parseObjects.size());
                     for(ParseObject obj : parseObjects) {
                         obj.put("trip", trip.getObjectId());
                         obj.saveInBackground();
