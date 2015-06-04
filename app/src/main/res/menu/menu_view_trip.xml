@@ -3,5 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.traveldiaries.ViewTripPhotosActivity">
     <item android:id="@+id/action_view_all_photos" android:title="@string/action_view_all_photos"
-        android:orderInCategory="100" app:showAsAction="ifRoom" />
+        android:icon="@android:drawable/ic_menu_gallery" android:orderInCategory="100"
+        app:showAsAction="always" android:showAsAction="always" />
 </menu>

@@ -26,6 +26,10 @@
         parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:colorPrimaryDark">@color/Blue</item>
     </style>
+    <style name="TurquoiseStatusBar.NoActionBar"
+        parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimaryDark">@color/DarkerTurquoise</item>
+    </style>
 
     <!-- ActionBar title text -->
     <style name="MyActionBarTitleText"

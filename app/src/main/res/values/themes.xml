@@ -29,6 +29,11 @@
         <item name="android:windowBackground">@color/Blue</item>
     </style>
 
+    <style name="TurquoiseStatusBar.NoActionBar"
+        parent="@android:style/Theme.Holo.Light.NoActionBar">
+        <item name="android:windowBackground">@color/DarkerTurquoise</item>
+    </style>
+
     <!-- ActionBar title text -->
     <style name="MyActionBarTitleText"
         parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">

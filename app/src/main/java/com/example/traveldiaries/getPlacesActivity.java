@@ -242,6 +242,7 @@ public class getPlacesActivity extends FragmentActivity {
                     //btnFind.setEnabled(false);
                     //categories.setVisibility(View.GONE);
                     setVisibility(categories, View.GONE);
+                    btnStartTrip.setVisibility(View.GONE);
                     clearPlaces();
                     clearAllSelections();
                 }
@@ -261,6 +262,7 @@ public class getPlacesActivity extends FragmentActivity {
                     //btnFind.setEnabled(false);
                     //categories.setVisibility(View.GONE);
                     setVisibility(categories, View.GONE);
+                    btnStartTrip.setVisibility(View.GONE);
                     clearPlaces();
                     clearAllSelections();
                 } else {
@@ -290,6 +292,7 @@ public class getPlacesActivity extends FragmentActivity {
                     //btnFind.setEnabled(false);
                     //categories.setVisibility(View.GONE);
                     setVisibility(categories, View.GONE);
+                    btnStartTrip.setVisibility(View.GONE);
                     clearPlaces();
                     clearAllSelections();
                 }
@@ -309,6 +312,7 @@ public class getPlacesActivity extends FragmentActivity {
                     //btnFind.setEnabled(false);
                     //categories.setVisibility(View.GONE);
                     setVisibility(categories, View.GONE);
+                    btnStartTrip.setVisibility(View.GONE);
                     clearPlaces();
                     clearAllSelections();
                 } else {
@@ -660,10 +664,10 @@ public class getPlacesActivity extends FragmentActivity {
 
         @Override
         protected void onPostExecute(List<HashMap<String, Double>> result) {
-
-            mLatitude_start = result.get(0).get("latitude");
-            mLongitude_start = result.get(0).get("longitude");
-
+            if(result != null && result.size()>0) {
+                mLatitude_start = result.get(0).get("latitude");
+                mLongitude_start = result.get(0).get("longitude");
+            }
         }
     }
 
@@ -735,8 +739,10 @@ public class getPlacesActivity extends FragmentActivity {
         @Override
         protected void onPostExecute(List<HashMap<String, Double>> result) {
 
-            mLatitude_end = result.get(0).get("latitude");
-            mLongitude_end = result.get(0).get("longitude");
+            if(result != null && result.size()>0) {
+                mLatitude_end = result.get(0).get("latitude");
+                mLongitude_end = result.get(0).get("longitude");
+            }
 
         }
     }
@@ -943,86 +949,89 @@ public class getPlacesActivity extends FragmentActivity {
         // Executed after the complete execution of doInBackground() method
         protected void onPostExecute(List<HashMap<String, String>> list) {
 
-            // Creating a marker
-            MarkerOptions markerOptions = new MarkerOptions();
-            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            if (list != null) {
 
-            for(int i=0;i<list.size();i++){
-                // Clears all the existing markers
+                // Creating a marker
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
 
-                // Getting a place from the places list
-                HashMap<String, String> hmPlace = list.get(i);
+                for (int i = 0; i < list.size(); i++) {
+                    // Clears all the existing markers
 
-                // Getting latitude of the place
-                double lat = Double.parseDouble(hmPlace.get("lat"));
+                    // Getting a place from the places list
+                    HashMap<String, String> hmPlace = list.get(i);
 
-                // Getting longitude of the place
-                double lng = Double.parseDouble(hmPlace.get("lng"));
+                    // Getting latitude of the place
+                    double lat = Double.parseDouble(hmPlace.get("lat"));
 
-                // Getting name
-                final String name = hmPlace.get("place_name");
+                    // Getting longitude of the place
+                    double lng = Double.parseDouble(hmPlace.get("lng"));
 
-                // Getting vicinity
-                final String vicinity = hmPlace.get("vicinity");
+                    // Getting name
+                    final String name = hmPlace.get("place_name");
 
-                LatLng latLng = new LatLng(lat, lng);
+                    // Getting vicinity
+                    final String vicinity = hmPlace.get("vicinity");
 
-                // Setting the position for the marker
-                markerOptions.position(latLng);
+                    LatLng latLng = new LatLng(lat, lng);
 
-                // Setting the title for the marker.
-                //This will be displayed on taping the marker
-                markerOptions.title(name + " : " + vicinity);
+                    // Setting the position for the marker
+                    markerOptions.position(latLng);
 
-                // Placing a marker on the touched position
-                mGoogleMap.addMarker(markerOptions);
-                System.out.println("name," + name + ",Vicinity" + vicinity);
-            }
+                    // Setting the title for the marker.
+                    //This will be displayed on taping the marker
+                    markerOptions.title(name + " : " + vicinity);
 
-            mGoogleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-                @Override
-                public void onInfoWindowClick(Marker marker) {
-                    System.out.println("Adding a text");
-                    LatLng point = marker.getPosition();
-                    String title = marker.getTitle();
-
-                    // Add place to list when info window is clicked
-                    if(!listItems.contains(marker.getTitle())) {
-                        if(canAddMorePlaces()) {
-                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
-                            listItems.add(marker.getTitle());
-                            places.add(1, point);
-                            selectedPlacesNames.add(1, title.split(":")[0]);
-                            selectedPlacesAddress.add(1, title.split(":")[1]);
-                        } else {
-                            Toast.makeText(getPlacesActivity.this, "Only 8 waypoints allowed!", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    // If place is already in list and info window is clicked again, remove place from list
-                    else {
-                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                        listItems.remove(marker.getTitle());
-                        places.remove(point);
-                        selectedPlacesNames.remove(title.split(":")[0]);
-                        selectedPlacesAddress.remove(title.split(":")[1]);
-                    }
-
-                    adapter.notifyDataSetChanged();
-
-                    if(listItems.isEmpty()) {
-                        setVisibility(listView, View.GONE);
-                    } else {
-                        setVisibility(listView, View.VISIBLE);
-                    }
-
-                    //Clear old route
-                    for (Polyline line : polylines)
-                        line.remove();
-
-                    routesJSON = MapHelperClass.getRoute(places);
-                    polylines = MapHelperClass.drawRoute(routesJSON, mGoogleMap);
+                    // Placing a marker on the touched position
+                    mGoogleMap.addMarker(markerOptions);
+                    System.out.println("name," + name + ",Vicinity" + vicinity);
                 }
-            });
+
+                mGoogleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                    @Override
+                    public void onInfoWindowClick(Marker marker) {
+                        System.out.println("Adding a text");
+                        LatLng point = marker.getPosition();
+                        String title = marker.getTitle();
+
+                        // Add place to list when info window is clicked
+                        if (!listItems.contains(marker.getTitle())) {
+                            if (canAddMorePlaces()) {
+                                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+                                listItems.add(marker.getTitle());
+                                places.add(1, point);
+                                selectedPlacesNames.add(1, title.split(":")[0]);
+                                selectedPlacesAddress.add(1, title.split(":")[1]);
+                            } else {
+                                Toast.makeText(getPlacesActivity.this, "Only 8 waypoints allowed!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        // If place is already in list and info window is clicked again, remove place from list
+                        else {
+                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                            listItems.remove(marker.getTitle());
+                            places.remove(point);
+                            selectedPlacesNames.remove(title.split(":")[0]);
+                            selectedPlacesAddress.remove(title.split(":")[1]);
+                        }
+
+                        adapter.notifyDataSetChanged();
+
+                        if (listItems.isEmpty()) {
+                            setVisibility(listView, View.GONE);
+                        } else {
+                            setVisibility(listView, View.VISIBLE);
+                        }
+
+                        //Clear old route
+                        for (Polyline line : polylines)
+                            line.remove();
+
+                        routesJSON = MapHelperClass.getRoute(places);
+                        polylines = MapHelperClass.drawRoute(routesJSON, mGoogleMap);
+                    }
+                });
+            }
         }
 
     }

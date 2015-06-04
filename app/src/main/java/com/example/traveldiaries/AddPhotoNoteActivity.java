@@ -59,8 +59,8 @@ public class AddPhotoNoteActivity extends Activity {
 
         setContentView(R.layout.activity_add_photo_note);
 
-        final int STATUS_BAR_COLOR = getResources().getColor(R.color.DarkerTurquoise);
-        getWindow().setStatusBarColor(STATUS_BAR_COLOR);
+        //final int STATUS_BAR_COLOR = getResources().getColor(R.color.DarkerTurquoise);
+        //getWindow().setStatusBarColor(STATUS_BAR_COLOR);
 
         // UI Elements
         TextView cancel = (TextView) findViewById(R.id.cancel);
@@ -182,8 +182,8 @@ public class AddPhotoNoteActivity extends Activity {
     private boolean saveImagesInLocalDataStore() {
         Boolean success;
 
-        //ParseGeoPoint geoPoint = getCurrentLocation();
-        final ParseGeoPoint geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
+        ParseGeoPoint geoPoint = getCurrentLocation();
+        //final ParseGeoPoint geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
         //TODO: Retry getCurrentLocation 2 times and then prompt for location entry if fail again
         if(geoPoint != null) {
             for (int i = 0; i < photos.size(); i++) {
