@@ -150,7 +150,7 @@ public class ViewTripActivity extends FragmentActivity {
             ParseGeoPoint geoPoint = (ParseGeoPoint) photonote.get("location");
 
 
-            float minDist = Float.MIN_VALUE;
+            float minDist = Float.MAX_VALUE;
             int closestPlace=0;
             for(int i=0; i<latLngs.size(); i++) {
                 float[] dist = new float[1];
@@ -181,13 +181,14 @@ public class ViewTripActivity extends FragmentActivity {
                 photosAtPlaces.add(closestPlace, pictures);
                 notesAtPlaces.add(closestPlace, notes);
                 geotagTimestampOfPlaces.add(closestPlace, geotagTimeStamps);
-            } else {
+            } else{
                 photosAtPlaces.get(closestPlace).add(photo);
                 notesAtPlaces.get(closestPlace).add(note);
                 geotagTimestampOfPlaces.get(closestPlace).add(closestPlace, geotagTimeStamp);
             }
         }
     }
+
 
     /**
      * Method to get a count of photos taken at each location.

@@ -11,10 +11,17 @@ android {
         versionCode 1
         versionName "1.0"
     }
+<<<<<<< Updated upstream
     buildTypes {
         debug {
             debuggable true
         }
+=======
+            buildTypes {
+                debug {
+                    debuggable true
+                }
+>>>>>>> Stashed changes
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
