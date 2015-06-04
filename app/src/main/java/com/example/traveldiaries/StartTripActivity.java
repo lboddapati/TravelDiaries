@@ -1,8 +1,16 @@
 package com.example.traveldiaries;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationProvider;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
@@ -38,7 +46,7 @@ import java.util.List;
 /**
  * Activity that tracks the trip while it is being taken (i.e once it is started).
  */
-public class StartTripActivity extends FragmentActivity {
+public class StartTripActivity extends FragmentActivity implements LocationListener {
     private GoogleMap mMap;
     private ParseObject trip;
     private ParseUser user;
@@ -47,8 +55,10 @@ public class StartTripActivity extends FragmentActivity {
     private ArrayList<String> names;
     private ArrayList<String> address;
     private ArrayList<LatLng> latLngs;
+    private JSONObject route;
 
-    private long lastBackPressTime = 0;
+    private Location currentLocation;
+    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +70,20 @@ public class StartTripActivity extends FragmentActivity {
             StrictMode.setThreadPolicy(policy);
         }
 
+        /*if(!isNetworkAvailable()) {
+            setContentView(R.layout.no_network_error);
+            Button refreshButton = (Button) findViewById(R.id.refresh);
+            refreshButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    StartTripActivity.this.recreate();
+                }
+            });
+
+        } else {*/
+
         setUpMapIfNeeded();
+        setUpLocationListener();
 
         user = ParseUser.getCurrentUser();
 
@@ -69,17 +92,20 @@ public class StartTripActivity extends FragmentActivity {
         latLngs = intent.getParcelableArrayListExtra("latLngs");
         names = intent.getStringArrayListExtra("names");
         address = intent.getStringArrayListExtra("address");
-        //System.out.println("IN MAP TRIP ACTIVITY :: "+latLngs.size()+"::"+names.size()+"::"+address.size());
+        try {
+            route = new JSONObject(intent.getStringExtra("route"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-        final ExpandableListView directionsListView = (ExpandableListView) findViewById(R.id.directions);
-        final Button finishTrip = (Button) findViewById(R.id.finishTrip);
-        final ImageButton addPicture = (ImageButton) findViewById(R.id.addPicture);
+        //System.out.println("IN MAP TRIP ACTIVITY :: "+latLngs.size()+"::"+names.size()+"::"+address.size());
 
         // Create a 'Trip' parse object and pin it for saving later.
         trip = new ParseObject("Trip");
         trip.put("user", user);
         trip.put("tripName", tripname);
-        JSONObject route = MapHelperClass.getRoute(latLngs);
+        //JSONObject route = MapHelperClass.getRoute(latLngs);
+
         trip.put("route", route);
         try {
             JSONArray waypointOrder = route.getJSONArray("waypoint_order");
@@ -101,6 +127,11 @@ public class StartTripActivity extends FragmentActivity {
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngs.get(0), 13.0f));
 
+
+        final ExpandableListView directionsListView = (ExpandableListView) findViewById(R.id.directions);
+        final Button finishTrip = (Button) findViewById(R.id.finishTrip);
+        final ImageButton addPicture = (ImageButton) findViewById(R.id.addPicture);
+
         // Display the place to place directions.
         DirectionsExpandableListAdapter adapter = new DirectionsExpandableListAdapter(getBaseContext(), route, names);
         directionsListView.setAdapter(adapter);
@@ -111,6 +142,7 @@ public class StartTripActivity extends FragmentActivity {
             public void onClick(View v) {
                 Intent pictureIntent = new Intent(StartTripActivity.this, AddPhotoNoteActivity.class);
                 pictureIntent.putExtra("tripname", tripname);
+                pictureIntent.putExtra("location", currentLocation);
                 startActivity(pictureIntent);
             }
         });
@@ -214,7 +246,7 @@ public class StartTripActivity extends FragmentActivity {
         // When cancel trip is selected, cancel the trip and delete all cached trip details.
         if (id == R.id.action_cancel_trip) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Are you sure you want to quit the trip?");
+            builder.setMessage("Are you sure you want to quit the trip? You will loose all trip information");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -243,7 +275,7 @@ public class StartTripActivity extends FragmentActivity {
     @Override
     public void onBackPressed() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure you want to quit the trip?");
+        builder.setMessage("Are you sure you want to quit the trip? You will loose all trip information");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -292,6 +324,114 @@ public class StartTripActivity extends FragmentActivity {
             // Try to obtain the map from the SupportMapFragment.
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
+            // Enabling MyLocation Layer of Google Map
+            mMap.setMyLocationEnabled(true);
         }
+    }
+
+    private void setUpLocationListener() {
+        ProgressDialog dialog = new ProgressDialog(StartTripActivity.this);
+        dialog.setMessage("Getting Coordinates");
+        dialog.show();
+        /********** get Gps location service LocationManager object ***********/
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 1, this);
+        } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000,1, this);
+        }
+        else {
+            Toast.makeText(getApplicationContext(), "Enable Location Services", Toast.LENGTH_LONG).show();
+        }
+        dialog.dismiss();
+    }
+
+    /**
+     * Called when the location has changed.
+     * <p/>
+     * <p> There are no restrictions on the use of the supplied Location object.
+     *
+     * @param location The new location, as a Location object.
+     */
+    @Override
+    public void onLocationChanged(Location location) {
+        currentLocation = location;
+
+        // Getting latitude of the current location
+        double latitude = location.getLatitude();
+
+        // Getting longitude of the current location
+        double longitude = location.getLongitude();
+
+        // Creating a LatLng object for the current location
+        LatLng latLng = new LatLng(latitude, longitude);
+
+        // Showing the current location in Google Map
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+        // Zoom in the Google Map
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));    }
+
+    /**
+     * Called when the provider status changes. This method is called when
+     * a provider is unable to fetch a location or if the provider has recently
+     * become available after a period of unavailability.
+     *
+     * @param provider the name of the location provider associated with this
+     *                 update.
+     * @param status   {@link LocationProvider#OUT_OF_SERVICE} if the
+     *                 provider is out of service, and this is not expected to change in the
+     *                 near future; {@link LocationProvider#TEMPORARILY_UNAVAILABLE} if
+     *                 the provider is temporarily unavailable but is expected to be available
+     *                 shortly; and {@link LocationProvider#AVAILABLE} if the
+     *                 provider is currently available.
+     * @param extras   an optional Bundle which will contain provider specific
+     *                 status variables.
+     *                 <p/>
+     *                 <p> A number of common key/value pairs for the extras Bundle are listed
+     *                 below. Providers that use any of the keys on this list must
+     *                 provide the corresponding value as described below.
+     *                 <p/>
+     *                 <ul>
+     *                 <li> satellites - the number of satellites used to derive the fix
+     */
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        if(status == LocationProvider.OUT_OF_SERVICE) {
+            Toast.makeText(StartTripActivity.this, provider+" is Out of service", Toast.LENGTH_LONG).show();
+        } else if (status == LocationProvider.TEMPORARILY_UNAVAILABLE) {
+            Toast.makeText(StartTripActivity.this, provider+" is Temporarily Unavailable", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Called when the provider is enabled by the user.
+     *
+     * @param provider the name of the location provider associated with this
+     *                 update.
+     */
+    @Override
+    public void onProviderEnabled(String provider) {
+        //Toast.makeText(AddPhotoNoteActivity.this, provider+" Enabled", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Called when the provider is disabled by the user. If requestLocationUpdates
+     * is called on an already disabled provider, this method is called
+     * immediately.
+     *
+     * @param provider the name of the location provider associated with this
+     *                 update.
+     */
+    @Override
+    public void onProviderDisabled(String provider) {
+        Toast.makeText(StartTripActivity.this, provider+" Disabled", Toast.LENGTH_LONG).show();
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

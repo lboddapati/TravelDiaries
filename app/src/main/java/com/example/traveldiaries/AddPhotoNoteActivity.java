@@ -1,11 +1,15 @@
 package com.example.traveldiaries;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Editable;
@@ -45,12 +49,16 @@ public class AddPhotoNoteActivity extends Activity {
     private EditText imageCaption;
     private int selected;
     private String tripname;
+    private Location currentLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        tripname = getIntent().getStringExtra("tripname");
+        Intent intent = getIntent();
+        tripname = intent.getStringExtra("tripname");
+        currentLocation = intent.getParcelableExtra("location");
+
         photos = new ArrayList<Bitmap>();
         notes = new ArrayList<String>();
 
@@ -182,7 +190,12 @@ public class AddPhotoNoteActivity extends Activity {
     private boolean saveImagesInLocalDataStore() {
         Boolean success;
 
-        ParseGeoPoint geoPoint = getCurrentLocation();
+        ParseGeoPoint geoPoint;
+        if(currentLocation != null && currentLocation.getLatitude() != 0 && currentLocation.getLongitude() != 0) {
+            geoPoint = new ParseGeoPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
+        } else {
+            geoPoint = getLastKnownLocation();
+        }
         //final ParseGeoPoint geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
         //TODO: Retry getCurrentLocation 2 times and then prompt for location entry if fail again
         if(geoPoint != null) {
@@ -219,15 +232,15 @@ public class AddPhotoNoteActivity extends Activity {
      * Get the current user location.
      * @return User location or null if current location is not available.
      */
-    private ParseGeoPoint getCurrentLocation() {
+    private ParseGeoPoint getLastKnownLocation() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Location lastKnownLocation = null;
-        if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            Log.d("GET CURRENT LOCATION", "NETWORK_PROVIDER ENABLED");
-            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Log.d("GET CURRENT LOCATION", "GPS_PROVIDER ENABLED");
             lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        } else if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            Log.d("GET CURRENT LOCATION", "NETWORK_PROVIDER ENABLED");
+            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         }
 
         if(lastKnownLocation != null) {
@@ -237,4 +250,5 @@ public class AddPhotoNoteActivity extends Activity {
             return null;
         }
     }
+
 }

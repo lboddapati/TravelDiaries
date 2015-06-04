@@ -12,7 +12,7 @@
     <style name="RedActionBar"
         parent="@android:style/Widget.Holo.Light.ActionBar.Solid">
         <item name="android:background">@color/Red</item>
-        <item name="android:windowBackground">@color/DarkRed</item>
+        <!--<item name="android:windowBackground">@color/DarkRed</item>-->
         <item name="android:titleTextStyle">@style/MyActionBarTitleText</item>
         <item name="android:displayOptions">showHome|homeAsUp|showTitle</item>
         <item name="displayOptions">showHome|homeAsUp|showTitle</item>
@@ -21,17 +21,17 @@
 
     <style name="GreenStatusBar.NoActionBar"
         parent="@android:style/Theme.Holo.Light.NoActionBar">
-        <item name="android:windowBackground">@color/DarkerLimeGreen</item>
+        <!--<item name="android:windowBackground">@color/DarkerLimeGreen</item>-->
     </style>
 
     <style name="BlueStatusBar.NoActionBar"
         parent="@android:style/Theme.Holo.Light.NoActionBar">
-        <item name="android:windowBackground">@color/Blue</item>
+        <!--<item name="android:windowBackground">@color/Blue</item>-->
     </style>
 
     <style name="TurquoiseStatusBar.NoActionBar"
         parent="@android:style/Theme.Holo.Light.NoActionBar">
-        <item name="android:windowBackground">@color/DarkerTurquoise</item>
+        <!--<item name="android:windowBackground">@color/DarkerTurquoise</item>-->
     </style>
 
     <!-- ActionBar title text -->

@@ -4,12 +4,17 @@ package com.example.traveldiaries;
  * Created by Tonia on 5/16/15.
  */
 import android.app.Dialog;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.location.LocationProvider;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -191,248 +196,184 @@ public class getPlacesActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_get_places);
 
-        //final int STATUS_BAR_COLOR = getResources().getColor(R.color.Blue);
-        //getWindow().setStatusBarColor(STATUS_BAR_COLOR);
-
-        YOUR_API_KEY = getResources().getString(R.string.google_places_key);
-        Log.d("API_KEY", YOUR_API_KEY);
-
-        if (android.os.Build.VERSION.SDK_INT > 9) {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-            StrictMode.setThreadPolicy(policy);
-        }
-
-        btnStartTrip = (ImageButton) findViewById(R.id.btn_StartTrip);
-        btnStartTrip.setVisibility(View.GONE);
-        categories = (HorizontalScrollView) findViewById(R.id.categories);
-        categories.setVisibility(View.GONE);
-        listView = (ListView) findViewById(R.id.listView2);
-        listView.setVisibility(View.GONE);
-        //btnFind = (Button) findViewById(R.id.btn_find);
-        //btnFind.setEnabled(false);
-        atvPlaces_start = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_start);
-        atvPlaces_end = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_end);
-        //chk_tourist = (CheckBox) findViewById(R.id.chk_tourist);
-        //chk_restaurants = (CheckBox) findViewById(R.id.chk_restaurants);
-        //chk_bars = (CheckBox) findViewById(R.id.chk_bars);
-        restaurantsBtn = (Button) findViewById(R.id.restaurants);
-        touristBtn = (Button) findViewById(R.id.tourist);
-        fuelBtn = (Button) findViewById(R.id.fuelUp);
-        popularBtn = (Button) findViewById(R.id.popular);
-        nightLifeBtn = (Button) findViewById(R.id.nightLife);
-        barsBtn = (Button) findViewById(R.id.bars);
-
-        atvPlaces_start.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                placesTask = new AutocompletePlacesTask();
-                placesTask.execute(s.toString());
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // TODO Auto-generated method stub
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if(atvPlaces_start.getText().toString().isEmpty()) {
-                    //btnFind.setEnabled(false);
-                    //categories.setVisibility(View.GONE);
-                    setVisibility(categories, View.GONE);
-                    btnStartTrip.setVisibility(View.GONE);
-                    clearPlaces();
-                    clearAllSelections();
+        if(!isNetworkAvailable()) {
+            setContentView(R.layout.no_network_error);
+            Button refreshButton = (Button) findViewById(R.id.refresh);
+            refreshButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getPlacesActivity.this.recreate();
                 }
+            });
+
+        } else {
+            setContentView(R.layout.activity_get_places);
+
+            //final int STATUS_BAR_COLOR = getResources().getColor(R.color.Blue);
+            //getWindow().setStatusBarColor(STATUS_BAR_COLOR);
+
+            YOUR_API_KEY = getResources().getString(R.string.google_places_key);
+            Log.d("API_KEY", YOUR_API_KEY);
+
+            if (android.os.Build.VERSION.SDK_INT > 9) {
+                StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+                StrictMode.setThreadPolicy(policy);
             }
-        });
 
-        atvPlaces_start.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int index, long id) {
+            btnStartTrip = (ImageButton) findViewById(R.id.btn_StartTrip);
+            btnStartTrip.setVisibility(View.GONE);
+            categories = (HorizontalScrollView) findViewById(R.id.categories);
+            categories.setVisibility(View.GONE);
+            listView = (ListView) findViewById(R.id.listView2);
+            listView.setVisibility(View.GONE);
+            //btnFind = (Button) findViewById(R.id.btn_find);
+            //btnFind.setEnabled(false);
+            atvPlaces_start = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_start);
+            atvPlaces_end = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_end);
+            //chk_tourist = (CheckBox) findViewById(R.id.chk_tourist);
+            //chk_restaurants = (CheckBox) findViewById(R.id.chk_restaurants);
+            //chk_bars = (CheckBox) findViewById(R.id.chk_bars);
+            restaurantsBtn = (Button) findViewById(R.id.restaurants);
+            touristBtn = (Button) findViewById(R.id.tourist);
+            fuelBtn = (Button) findViewById(R.id.fuelUp);
+            popularBtn = (Button) findViewById(R.id.popular);
+            nightLifeBtn = (Button) findViewById(R.id.nightLife);
+            barsBtn = (Button) findViewById(R.id.bars);
 
-                SimpleAdapter adapter = (SimpleAdapter) arg0.getAdapter();
-
-                HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
-                System.out.println(hm.get("place_id") + "Place");
-                FunctionLatLong(hm.get("place_id"));
-                if(atvPlaces_end.getText().toString().isEmpty()) {
-                    //btnFind.setEnabled(false);
-                    //categories.setVisibility(View.GONE);
-                    setVisibility(categories, View.GONE);
-                    btnStartTrip.setVisibility(View.GONE);
-                    clearPlaces();
-                    clearAllSelections();
-                } else {
-                    //btnFind.setEnabled(true);
-                    //categories.setVisibility(View.VISIBLE);
-                    setVisibility(categories, View.VISIBLE);
-                    getPlaces();
+            atvPlaces_start.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    placesTask = new AutocompletePlacesTask();
+                    placesTask.execute(s.toString());
                 }
-            }
-        });
 
-        atvPlaces_end.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                placesTask = new AutocompletePlacesTask();
-                placesTask.execute(s.toString());
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // TODO Auto-generated method stub
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if(atvPlaces_end.getText().toString().isEmpty()) {
-                    //btnFind.setEnabled(false);
-                    //categories.setVisibility(View.GONE);
-                    setVisibility(categories, View.GONE);
-                    btnStartTrip.setVisibility(View.GONE);
-                    clearPlaces();
-                    clearAllSelections();
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    // TODO Auto-generated method stub
                 }
-            }
-        });
 
-        atvPlaces_end.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int index, long id) {
-
-                SimpleAdapter adapter = (SimpleAdapter) arg0.getAdapter();
-
-                HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
-                System.out.println(hm.get("place_id") + "Place");
-                FunctionLatLong_end(hm.get("place_id"));
-                if(atvPlaces_start.getText().toString().isEmpty()) {
-                    //btnFind.setEnabled(false);
-                    //categories.setVisibility(View.GONE);
-                    setVisibility(categories, View.GONE);
-                    btnStartTrip.setVisibility(View.GONE);
-                    clearPlaces();
-                    clearAllSelections();
-                } else {
-                    //btnFind.setEnabled(true);
-                    //categories.setVisibility(View.VISIBLE);
-                    setVisibility(categories, View.VISIBLE);
-                    getPlaces();
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (atvPlaces_start.getText().toString().isEmpty()) {
+                        //btnFind.setEnabled(false);
+                        //categories.setVisibility(View.GONE);
+                        setVisibility(categories, View.GONE);
+                        btnStartTrip.setVisibility(View.GONE);
+                        clearPlaces();
+                        clearAllSelections();
+                    }
                 }
-            }
-        });
+            });
 
-        listItems = new ArrayList<String>();
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listItems);
-        listView.setAdapter(adapter);
+            atvPlaces_start.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> arg0, View arg1, int index, long id) {
 
-        // Getting Google Play availability status
-        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getBaseContext());
+                    SimpleAdapter adapter = (SimpleAdapter) arg0.getAdapter();
 
-        if (status != ConnectionResult.SUCCESS) { // Google Play Services are not available
+                    HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
+                    System.out.println(hm.get("place_id") + "Place");
+                    FunctionLatLong(hm.get("place_id"));
+                    if (atvPlaces_end.getText().toString().isEmpty()) {
+                        //btnFind.setEnabled(false);
+                        //categories.setVisibility(View.GONE);
+                        setVisibility(categories, View.GONE);
+                        btnStartTrip.setVisibility(View.GONE);
+                        clearPlaces();
+                        clearAllSelections();
+                    } else {
+                        //btnFind.setEnabled(true);
+                        //categories.setVisibility(View.VISIBLE);
+                        setVisibility(categories, View.VISIBLE);
+                        getPlaces();
+                    }
+                }
+            });
 
-            int requestCode = 10;
-            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, this, requestCode);
-            dialog.show();
+            atvPlaces_end.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    placesTask = new AutocompletePlacesTask();
+                    placesTask.execute(s.toString());
+                }
 
-        } else { // Google Play Services are available
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    // TODO Auto-generated method stub
+                }
 
-            // Getting reference to the SupportMapFragment
-            final SupportMapFragment fragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (atvPlaces_end.getText().toString().isEmpty()) {
+                        //btnFind.setEnabled(false);
+                        //categories.setVisibility(View.GONE);
+                        setVisibility(categories, View.GONE);
+                        btnStartTrip.setVisibility(View.GONE);
+                        clearPlaces();
+                        clearAllSelections();
+                    }
+                }
+            });
 
-            // Getting Google Map
-            mGoogleMap = fragment.getMap();
+            atvPlaces_end.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> arg0, View arg1, int index, long id) {
 
-            /*// Setting click event lister for the find button
-            btnFind.setOnClickListener(new View.OnClickListener() {
+                    SimpleAdapter adapter = (SimpleAdapter) arg0.getAdapter();
+
+                    HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
+                    System.out.println(hm.get("place_id") + "Place");
+                    FunctionLatLong_end(hm.get("place_id"));
+                    if (atvPlaces_start.getText().toString().isEmpty()) {
+                        //btnFind.setEnabled(false);
+                        //categories.setVisibility(View.GONE);
+                        setVisibility(categories, View.GONE);
+                        btnStartTrip.setVisibility(View.GONE);
+                        clearPlaces();
+                        clearAllSelections();
+                    } else {
+                        //btnFind.setEnabled(true);
+                        //categories.setVisibility(View.VISIBLE);
+                        setVisibility(categories, View.VISIBLE);
+                        getPlaces();
+                    }
+                }
+            });
+
+            listItems = new ArrayList<String>();
+            adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listItems);
+            listView.setAdapter(adapter);
+
+            // set up the map
+            setUpMapIfNeeded();
+
+            btnStartTrip.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-                    mGoogleMap.clear();
-                    listItems.clear();
-                    places.clear();
-                    selectedPlacesNames.clear();
-                    selectedPlacesAddress.clear();
-                    adapter.notifyDataSetChanged();
-
-                    btnStartTrip.setVisibility(View.VISIBLE);
-                    fragment.getView().setVisibility(v.VISIBLE);
-
-                    setParameters(mLatitude_start, mLongitude_start, mLatitude_end, mLongitude_end);
-
-                    routesJSON = MapHelperClass.getRoute(places);
-                    polylines = MapHelperClass.drawRoute(routesJSON, mGoogleMap);
-
-                    // Differentiate start and end location markers with different colors. Start = Green, End = Red.
-                    mGoogleMap.addMarker(new MarkerOptions().position(places.get(0))
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                    mGoogleMap.addMarker(new MarkerOptions().position(places.get(1))
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(places.get(0), 11.0f));
-
-                    JSONObject overviewPolyline = null;
-                    try {
-                        overviewPolyline = routesJSON.getJSONObject("overview_polyline");
-                        String encodedPolylines = overviewPolyline.getString("points");
-                        points = MapHelperClass.decodePolylines(encodedPolylines);
-                        searchPlaceTypes(points);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
+                    Intent intent = new Intent(getApplicationContext(), StartTripActivity.class);
+                    intent.putParcelableArrayListExtra("latLngs", places);
+                    intent.putStringArrayListExtra("names", selectedPlacesNames);
+                    intent.putStringArrayListExtra("address", selectedPlacesAddress);
+                    intent.putExtra("route", routesJSON.toString());
+                    startActivity(intent);
+                    finish();
                 }
-            });*/
 
+            });
 
-            // Enabling MyLocation in Google Map
-            mGoogleMap.setMyLocationEnabled(true);
+            //chk_bars.setOnCheckedChangeListener(checkBoxListener);
+            //chk_restaurants.setOnCheckedChangeListener(checkBoxListener);
+            //chk_tourist.setOnCheckedChangeListener(checkBoxListener);
 
-            // Getting LocationManager object from System Service LOCATION_SERVICE
-            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-            // Creating a criteria object to retrieve provider
-            Criteria criteria = new Criteria();
-
-            // Getting the name of the best provider
-            String provider = locationManager.getBestProvider(criteria, true);
-
-            // Getting Current Location From GPS
-            Location location = locationManager.getLastKnownLocation(provider);
-
-            if (location != null) {
-                onLocationChanged(location);
-            }
-
+            restaurantsBtn.setOnClickListener(categoriesClickListener);
+            popularBtn.setOnClickListener(categoriesClickListener);
+            fuelBtn.setOnClickListener(categoriesClickListener);
+            nightLifeBtn.setOnClickListener(categoriesClickListener);
+            touristBtn.setOnClickListener(categoriesClickListener);
+            barsBtn.setOnClickListener(categoriesClickListener);
         }
-
-        btnStartTrip.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), StartTripActivity.class);
-                intent.putParcelableArrayListExtra("latLngs", places);
-                intent.putStringArrayListExtra("names", selectedPlacesNames);
-                intent.putStringArrayListExtra("address", selectedPlacesAddress);
-                startActivity(intent);
-                finish();
-            }
-
-        });
-
-        //chk_bars.setOnCheckedChangeListener(checkBoxListener);
-        //chk_restaurants.setOnCheckedChangeListener(checkBoxListener);
-        //chk_tourist.setOnCheckedChangeListener(checkBoxListener);
-
-        restaurantsBtn.setOnClickListener(categoriesClickListener);
-        popularBtn.setOnClickListener(categoriesClickListener);
-        fuelBtn.setOnClickListener(categoriesClickListener);
-        nightLifeBtn.setOnClickListener(categoriesClickListener);
-        touristBtn.setOnClickListener(categoriesClickListener);
-        barsBtn.setOnClickListener(categoriesClickListener);
     }
 
     private void clearAllSelections() {
@@ -757,6 +698,8 @@ public class getPlacesActivity extends FragmentActivity {
         HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(strUrl);
+            Log.d("In downloadUrl", url.toString());
+
 
             // Creating an http connection to communicate with url
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -805,6 +748,7 @@ public class getPlacesActivity extends FragmentActivity {
 
             try {
                 input = "input=" + URLEncoder.encode(place[0], "utf-8");
+                System.out.println("URL ENCODED INPUT = "+ input);
             } catch (UnsupportedEncodingException e1) {
                 e1.printStackTrace();
             }
@@ -1049,6 +993,65 @@ public class getPlacesActivity extends FragmentActivity {
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(12));
 
+    }
+
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    /**
+     * Set up the map object.
+     */
+    private void setUpMapIfNeeded() {
+        if (mGoogleMap == null) {
+            // Getting Google Play availability status
+            int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getBaseContext());
+
+            if (status != ConnectionResult.SUCCESS) { // Google Play Services are not available
+                int requestCode = 10;
+                Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, this, requestCode);
+                dialog.show();
+            } else { // Google Play Services are available
+
+                // Getting reference to the SupportMapFragment
+                final SupportMapFragment fragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+
+                // Getting Google Map
+                mGoogleMap = fragment.getMap();
+
+                // Enabling MyLocation in Google Map
+                mGoogleMap.setMyLocationEnabled(true);
+
+                // Getting LocationManager object from System Service LOCATION_SERVICE
+                LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+                // Creating a criteria object to retrieve provider
+                Criteria criteria = new Criteria();
+
+                // Getting the name of the best provider
+                //String provider = locationManager.getBestProvider(criteria, true);
+                String provider = null;
+                if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    provider = LocationManager.GPS_PROVIDER;
+                } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                    provider = LocationManager.NETWORK_PROVIDER;
+                }
+
+                if (provider != null) {
+                    // Getting Current Location From GPS
+                    Location location = locationManager.getLastKnownLocation(provider);
+
+                    if (location != null) {
+                        onLocationChanged(location);
+                    }
+                }
+
+            }
+        }
     }
 
 }

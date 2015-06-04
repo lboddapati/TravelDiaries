@@ -41,7 +41,7 @@
 <color name="LightRed">#bfff0000</color>
 <color name="Red">#FF0000</color>
 <color name="DarkRed">#E00000</color>
-<color name="TranslucentRed">#c0ff0000</color>
+<color name="TranslucentRed">#afff0000</color>
 <color name="OldLace">#FDF5E6</color>
 <color name="LightGoldenrodYellow">#FAFAD2</color>
 <color name="Linen">#FAF0E6</color>
@@ -103,7 +103,7 @@
 <color name="BlueViolet">#8A2BE2</color>
 <color name="LightSkyBlue">#87CEFA</color>
 <color name="SkyBlue">#87CEEB</color>
-<color name="Gray">#808080</color>
+<color name="Gray">#9e9e9e</color>
 <color name="Olive">#808000</color>
 <color name="Purple">#800080</color>
 <color name="Maroon">#800000</color>
