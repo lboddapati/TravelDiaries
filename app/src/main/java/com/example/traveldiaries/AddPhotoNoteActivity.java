@@ -5,12 +5,15 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -26,15 +29,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseUser;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Activity to take photos and notes and add them to the trip.
@@ -50,10 +58,15 @@ public class AddPhotoNoteActivity extends Activity {
     private int selected;
     private String tripname;
     private Location currentLocation;
+    private ArrayList<String> photoFilePaths;
+    private int currPhotoNum;
+    private String user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        user = ParseUser.getCurrentUser().getObjectId();
 
         Intent intent = getIntent();
         tripname = intent.getStringExtra("tripname");
@@ -61,6 +74,7 @@ public class AddPhotoNoteActivity extends Activity {
 
         photos = new ArrayList<Bitmap>();
         notes = new ArrayList<String>();
+        photoFilePaths = new ArrayList<String>();
 
         // Call an intent to take pictures
         launchCameraIntent();
@@ -93,6 +107,7 @@ public class AddPhotoNoteActivity extends Activity {
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                deleteTempFiles(photoFilePaths, 0, photoFilePaths.size() - 1);
                 finish();
             }
         });
@@ -101,12 +116,7 @@ public class AddPhotoNoteActivity extends Activity {
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(saveImagesInLocalDataStore()) {
-                    //Toast.makeText(AddPhotoNoteActivity.this, photos.size() + " Photos Added!", Toast.LENGTH_SHORT).show();
-                } else {
-                    //TODO: Retry
-                    //Toast.makeText(AddPhotoNoteActivity.this, "Error:: Photos Upload Failed!", Toast.LENGTH_SHORT).show();
-                }
+                saveImagesInLocalDataStore();
                 finish();
             }
         });
@@ -117,6 +127,8 @@ public class AddPhotoNoteActivity extends Activity {
             public void onClick(View v) {
                 photos.remove(selected);
                 notes.remove(selected);
+                deleteTempFile(photoFilePaths.get(selected));
+                photoFilePaths.remove(selected);
                 if(photos.size() == 0) {
                     finish();
                 } else {
@@ -152,7 +164,9 @@ public class AddPhotoNoteActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+        String currentPhotoFilePath = photoFilePaths.get(currPhotoNum);
+
+        /*if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             //TODO : Add timestamp and caption
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
@@ -162,6 +176,28 @@ public class AddPhotoNoteActivity extends Activity {
             selected = photos.size()-1;
             setPreview(selected);
         } else {
+            if(photos.size() == 0) {
+                finish();
+            }
+        }*/
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 3;  // Experiment with different sizes
+            Bitmap b = BitmapFactory.decodeFile(currentPhotoFilePath, options);
+
+            if (b == null){
+                Log.e("BITMAP", "BITMAP NULL!!");
+            }
+            photos.add(b);
+            notes.add("");
+            ((BaseAdapter) picsThumbnailView.getAdapter()).notifyDataSetChanged();
+            selected = photos.size()-1;
+            setPreview(selected);
+        }
+        else {
+            deleteTempFile(currentPhotoFilePath);  // Delete temp file if photo not taken
             if(photos.size() == 0) {
                 finish();
             }
@@ -179,16 +215,53 @@ public class AddPhotoNoteActivity extends Activity {
     private void launchCameraIntent() {
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePhotoIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePhotoIntent, REQUEST_IMAGE_CAPTURE);
+            //startActivityForResult(takePhotoIntent, REQUEST_IMAGE_CAPTURE);
+            currPhotoNum = photos.size();
+            // Delete an temp files
+            if (photoFilePaths.size() > photos.size()) {
+                deleteTempFiles(photoFilePaths, photos.size(), photoFilePaths.size() - 1);
+            }
+
+            //generate a unique file name for the image file
+            File photoFile = null;
+            try {
+                File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                String imageFileName = "TravelDiaries_image_"+ timeStamp +"_"+ currPhotoNum;
+                photoFile = File.createTempFile(imageFileName, ".jpeg", dir);
+
+                photoFilePaths.add(currPhotoNum, photoFile.getAbsolutePath());
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Call an intent to take pictures
+            if (photoFile != null) {
+                takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                startActivityForResult(takePhotoIntent, REQUEST_IMAGE_CAPTURE);
+            }
         }
+    }
+
+    private void deleteTempFiles(List<String> filePaths, int i, int j) {
+        for (int x=i; x<=j; x++) {
+            File file = new File(filePaths.get(x));
+            file.delete();
+        }
+    }
+
+    private void deleteTempFile(String filePath) {
+        File file = new File(filePath);
+        file.delete();
     }
 
     /**
      * Geotag the images and save to local datastore until they can be uploded to Parse.
      * @return Sucess or Failure.
      */
-    private boolean saveImagesInLocalDataStore() {
-        Boolean success;
+    private void saveImagesInLocalDataStore() {
+        //Boolean success;
 
         ParseGeoPoint geoPoint;
         if(currentLocation != null && currentLocation.getLatitude() != 0 && currentLocation.getLongitude() != 0) {
@@ -196,15 +269,24 @@ public class AddPhotoNoteActivity extends Activity {
         } else {
             geoPoint = getLastKnownLocation();
         }
-        //final ParseGeoPoint geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
-        //TODO: Retry getCurrentLocation 2 times and then prompt for location entry if fail again
-        if(geoPoint != null) {
-            for (int i = 0; i < photos.size(); i++) {
-                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                photos.get(i).compress(Bitmap.CompressFormat.JPEG, 100, byteStream);
+        //geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
+        for (int i = 0; i < photoFilePaths.size(); i++) {
+            final String fileName = photoFilePaths.get(i);
+
+            // Make it available in the gallery
+            Intent mediaScanIntent = new Intent (Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            Uri contentUri = Uri.fromFile(new File(fileName));
+            mediaScanIntent.setData(contentUri);
+            sendBroadcast(mediaScanIntent);
+
+            Bitmap b = BitmapFactory.decodeFile(fileName);
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            if(b != null) {
+                b.compress(Bitmap.CompressFormat.JPEG, 100, byteStream);
+
                 byte[] data = byteStream.toByteArray();
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                final String imageFileName = tripname +"_image_"+ timeStamp +"_"+ i +".jpeg";
+                final String imageFileName = user+"_image_" + timeStamp + "_" + i + ".jpeg";
                 final ParseFile parseImageFile = new ParseFile(imageFileName, data);
                 final String caption = notes.get(i);
 
@@ -213,19 +295,18 @@ public class AddPhotoNoteActivity extends Activity {
                     final ParseObject imageObject = new ParseObject("TripPhotoNote");
                     imageObject.put("photo", parseImageFile);
                     imageObject.put("note", caption);
-                    imageObject.put("location", geoPoint);
+                    if(geoPoint != null) {
+                        imageObject.put("location", geoPoint);
+                    }
                     imageObject.pin(tripname);
-                    Log.d("PINNING IMAGES", tripname+" - "+imageFileName+" pinned");
+                    Log.d("PINNING IMAGES", tripname + " - " + imageFileName + " pinned");
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+            } else {
+                Log.d("ADD PHOTO NOTE ACTIVITY", "bit map is null");
             }
-            success = true;
-        } else {
-            //TODO: Prompt for entering location
-            success = false;
         }
-        return success;
     }
 
     /**
@@ -246,7 +327,7 @@ public class AddPhotoNoteActivity extends Activity {
         if(lastKnownLocation != null) {
             return new ParseGeoPoint(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
         } else {
-            Toast.makeText(AddPhotoNoteActivity.this, "Error :: Could not get current location", Toast.LENGTH_SHORT).show();
+            Toast.makeText(AddPhotoNoteActivity.this, "Could not get current location", Toast.LENGTH_SHORT).show();
             return null;
         }
     }

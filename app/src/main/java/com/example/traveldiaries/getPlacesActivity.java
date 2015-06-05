@@ -25,6 +25,7 @@ import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -378,12 +379,14 @@ public class getPlacesActivity extends FragmentActivity {
                 dialogBox.setView(view);
 
                 final EditText input = (EditText) view.findViewById(R.id.dialogboxText);
-                dialogBox.setPositiveButton("Proceeed", new DialogInterface.OnClickListener() {
+                dialogBox.setPositiveButton("Start Trip", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int id) {
                         String tripName = input.getText().toString();
-                        if (tripName == "") {
+
+                        if (TextUtils.getTrimmedLength(tripName) == 0) {
                             input.setError("Trip Name cannot be empty. Please enter some text");
+                            Toast.makeText(getPlacesActivity.this, "Trip Name cannot be empty", Toast.LENGTH_LONG).show();
                         } else {
                             Intent intent = new Intent(getApplicationContext(), StartTripActivity.class);
                             intent.putParcelableArrayListExtra("latLngs", places);
@@ -397,7 +400,7 @@ public class getPlacesActivity extends FragmentActivity {
 
                     }
                 });
-                dialogBox.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                dialogBox.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialogInterface, int id) {
                         dialogInterface.cancel();
                     }

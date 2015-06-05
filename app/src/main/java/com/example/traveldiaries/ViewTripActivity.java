@@ -45,17 +45,18 @@ public class ViewTripActivity extends FragmentActivity {
     private List<ParseObject> photoNotes;
     private JSONObject placesJSON; //TODO: change this to list of google places;
     private JSONObject route;
+    private String tripname;
 
     private ArrayList<String> names;
     private ArrayList<String> address;
     private ArrayList<LatLng> latLngs;
 
-    private ArrayList<ArrayList<Bitmap>> photosAtPlaces;
-    private ArrayList<Bitmap> allPhotos;
-    private ArrayList<ArrayList<String>> notesAtPlaces;
-    private ArrayList<String> allNotes;
-    private ArrayList<ArrayList<String>> geotagTimestampOfPlaces;
-    private ArrayList<String> allGeotagTimestamps;
+    //private ArrayList<ArrayList<Bitmap>> photosAtPlaces;
+    //private ArrayList<Bitmap> allPhotos;
+    //private ArrayList<ArrayList<String>> notesAtPlaces;
+    //private ArrayList<String> allNotes;
+    //private ArrayList<ArrayList<String>> geotagTimestampOfPlaces;
+    //private ArrayList<String> allGeotagTimestamps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +78,7 @@ public class ViewTripActivity extends FragmentActivity {
         ParseQuery<ParseObject> tripQuery = ParseQuery.getQuery("Trip");
         try {
             trip = tripQuery.get(tripID);
-            String tripname = trip.getString("tripName");
+            tripname = trip.getString("tripName");
             //String date = String.valueOf(trip.getCreatedAt());
             setTitle(tripname);//+" ("+date+")");
 
@@ -98,21 +99,23 @@ public class ViewTripActivity extends FragmentActivity {
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngs.get(0), 11.0f));
 
-            initialize();
+            //initialize();
 
             ListView listView = (ListView) findViewById(R.id.places);
 
-            matchPhotosToPlaces();
-            listView.setAdapter(new ListAdapter(this, names, address, getPhotoCount(photosAtPlaces)));
+            ArrayList<Integer> photoCounts = matchPhotosToPlaces();
+            //listView.setAdapter(new ListAdapter(this, names, address, getPhotoCount(photosAtPlaces)));
+            listView.setAdapter(new ListAdapter(this, names, address, photoCounts));
             listView.setVisibility(View.VISIBLE);
 
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                     Intent intent;
                     intent = new Intent(ViewTripActivity.this, ViewTripPhotosActivity.class);
-                    intent.putParcelableArrayListExtra("photos", photosAtPlaces.get(position));
-                    intent.putStringArrayListExtra("notes", notesAtPlaces.get(position));
-                    intent.putStringArrayListExtra("geotag_timestamp", geotagTimestampOfPlaces.get(position));
+                    //intent.putParcelableArrayListExtra("photos", photosAtPlaces.get(position));
+                    //intent.putStringArrayListExtra("notes", notesAtPlaces.get(position));
+                    //intent.putStringArrayListExtra("geotag_timestamp", geotagTimestampOfPlaces.get(position));
+                    intent.putExtra("pin", names.get(position));
                     startActivity(intent);
                 }
             });
@@ -121,7 +124,7 @@ public class ViewTripActivity extends FragmentActivity {
         }
     }
 
-    private void initialize() {
+    /*private void initialize() {
         allPhotos = new ArrayList<Bitmap>();
         allNotes = new ArrayList<String>();
         allGeotagTimestamps = new ArrayList<String>();
@@ -135,16 +138,16 @@ public class ViewTripActivity extends FragmentActivity {
             geotagTimestampOfPlaces.add(null);
         }
 
-    }
+    }*/
 
     /**
      * Method that matches the photos taken in a trip to the place which is
      * closest to where the photo was taken.
      * @throws ParseException
      */
-    private void matchPhotosToPlaces() throws ParseException {
+    /*private void matchPhotosToPlaces() throws ParseException {
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 2;  //TODO: set optimal size;
+        options.inSampleSize = 1;  //TODO: set optimal size;
 
         for (ParseObject photonote : photoNotes) {
             ParseGeoPoint geoPoint = (ParseGeoPoint) photonote.get("location");
@@ -187,6 +190,41 @@ public class ViewTripActivity extends FragmentActivity {
                 geotagTimestampOfPlaces.get(closestPlace).add(closestPlace, geotagTimeStamp);
             }
         }
+    }*/
+
+    private ArrayList<Integer> matchPhotosToPlaces() throws ParseException {
+        ArrayList<Integer> photoCount = new ArrayList<Integer>(names.size());
+
+        for (int i=0; i<names.size(); i++) {
+            photoCount.add(0);
+        }
+
+        for (ParseObject photonote : photoNotes) {
+            ParseGeoPoint geoPoint = (ParseGeoPoint) photonote.get("location");
+            if (geoPoint != null) {
+
+                float minDist = Float.MAX_VALUE;
+                int closestPlace = 0;
+                for (int i = 0; i < latLngs.size(); i++) {
+                    float[] dist = new float[1];
+                    Location.distanceBetween(geoPoint.getLatitude(), geoPoint.getLongitude()
+                            , latLngs.get(i).latitude, latLngs.get(i).longitude, dist);
+                    if (dist[0] < minDist) {
+                        minDist = dist[0];
+                        closestPlace = i;
+                    }
+                }
+
+                photonote.put("geotag", "At " + names.get(closestPlace));
+                photonote.pinInBackground(names.get(closestPlace));
+
+                int count = photoCount.get(closestPlace) + 1;
+                photoCount.add(closestPlace, count);
+            }
+            photonote.pinInBackground(tripname);
+        }
+
+        return photoCount;
     }
 
 
@@ -233,7 +271,7 @@ public class ViewTripActivity extends FragmentActivity {
     }
 
     /**
-     * Methos that parses the given places JSONObject and extracts the
+     * Method that parses the given places JSONObject and extracts the
      * details of the places into the names, address and latLngs ArrayLists.
      * @param placesJSON The JSON Object that contains the details of the places visited.
      */
@@ -282,13 +320,25 @@ public class ViewTripActivity extends FragmentActivity {
         if (id == R.id.action_view_all_photos) {
             Intent intent;
             intent = new Intent(ViewTripActivity.this, ViewTripPhotosActivity.class);
-            intent.putParcelableArrayListExtra("photos", allPhotos);
-            intent.putStringArrayListExtra("notes", allNotes);
-            intent.putStringArrayListExtra("geotag_timestamp", allGeotagTimestamps);
+            //intent.putParcelableArrayListExtra("photos", allPhotos);
+            //intent.putStringArrayListExtra("notes", allNotes);
+            //intent.putStringArrayListExtra("geotag_timestamp", allGeotagTimestamps);
+            intent.putExtra("pin", tripname);
             startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Destroy all fragments and loaders.
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ParseObject.unpinAllInBackground(tripname);
+        for(String placename : names) {
+            ParseObject.unpinAllInBackground(placename);
+        }
+    }
 }

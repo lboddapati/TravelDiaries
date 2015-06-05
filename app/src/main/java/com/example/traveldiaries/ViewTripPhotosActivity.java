@@ -4,29 +4,25 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.v4.view.MotionEventCompat;
-import android.transition.Slide;
-import android.transition.Transition;
-import android.transition.TransitionManager;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class ViewTripPhotosActivity extends Activity {
     private int imageShowing;
@@ -38,14 +34,37 @@ public class ViewTripPhotosActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_photos);
 
-        final ArrayList<Bitmap> pics_icons;
-        final ArrayList<String> pic_notes;
-        final ArrayList<String> pic_geotag_timestamp;
+        final ArrayList<Bitmap> pics_icons = new ArrayList<Bitmap>();
+        final ArrayList<String> pic_notes = new ArrayList<String>();
+        final ArrayList<String> pic_geotag_timestamp = new ArrayList<String>();
 
-        Intent intent = getIntent();
-        pics_icons = intent.getParcelableArrayListExtra("photos");
-        pic_notes = intent.getStringArrayListExtra("notes");
-        pic_geotag_timestamp = intent.getStringArrayListExtra("geotag_timestamp");
+        //Intent intent = getIntent();
+        //pics_icons = intent.getParcelableArrayListExtra("photos");
+        //pic_notes = intent.getStringArrayListExtra("notes");
+        //pic_geotag_timestamp = intent.getStringArrayListExtra("geotag_timestamp");
+        String pin = getIntent().getStringExtra("pin");
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("TripPhotoNote");
+        query.fromPin(pin);
+        List<ParseObject> photonotes = null;
+        try {
+            photonotes = query.find();
+            for(ParseObject photonote : photonotes) {
+                byte[] data = photonote.getParseFile("photo").getData();
+                Bitmap photo = BitmapFactory.decodeByteArray(data, 0, data.length);
+                String note = photonote.getString("note");
+                String geotagTimeStamp = photonote.getCreatedAt().toString();
+                if (photonote.getString("geotag") != null) {
+                    geotagTimeStamp = photonote.getString("geotag") +" (" + geotagTimeStamp + ")";
+                }
+                pics_icons.add(photo);
+                pic_notes.add(note);
+                pic_geotag_timestamp.add(geotagTimeStamp);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
         imageCount = pics_icons.size();
 
         GridView gridview = (GridView) findViewById(R.id.gridview);
@@ -82,7 +101,7 @@ public class ViewTripPhotosActivity extends Activity {
                                         imageShowing--;
 
                                         Animation animation = AnimationUtils.loadAnimation(ViewTripPhotosActivity.this
-                                                                                            , R.anim.swipe_left_to_right);
+                                                , R.anim.swipe_left_to_right);
                                         animation.setAnimationListener(new Animation.AnimationListener() {
                                             @Override
                                             public void onAnimationStart(Animation animation) {
@@ -106,7 +125,7 @@ public class ViewTripPhotosActivity extends Activity {
                                         imageShowing++;
 
                                         Animation animation = AnimationUtils.loadAnimation(ViewTripPhotosActivity.this
-                                                                                            , R.anim.swipe_right_to_left);
+                                                , R.anim.swipe_right_to_left);
                                         animation.setAnimationListener(new Animation.AnimationListener() {
                                             @Override
                                             public void onAnimationStart(Animation animation) {

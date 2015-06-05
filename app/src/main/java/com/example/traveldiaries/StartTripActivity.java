@@ -159,15 +159,17 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
                     public void onClick(DialogInterface dialog, int which) {
                         try {
                             trip.save();
-                            trip.unpinInBackground();
                             uploadImagesToCloud();
+                            Toast.makeText(StartTripActivity.this, "Trip saved!", Toast.LENGTH_SHORT).show();
+                            trip.unpinInBackground();
+                            Intent prevTrips = new Intent(StartTripActivity.this, PreviousTrip.class);
+                            prevTrips.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(prevTrips);
+                            finish();
                         } catch (ParseException e) {
                             e.printStackTrace();
+                            Toast.makeText(StartTripActivity.this, "Error saving trip! Try again", Toast.LENGTH_LONG).show();
                         }
-                        Intent prevTrips = new Intent(StartTripActivity.this, PreviousTrip.class);
-                        prevTrips.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(prevTrips);
-                        finish();
                     }
                 });
                 builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -223,6 +225,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if(e == null) {
+                    //Toast.makeText(StartTripActivity.this, "UPLOADING IMAGES :: "+tripname+" - FOUND :: "+parseObjects.size(), Toast.LENGTH_LONG).show();
                     Log.d("UPLOADING IMAGES", tripname+" - FOUND :: "+parseObjects.size());
                     for(ParseObject obj : parseObjects) {
                         obj.put("trip", trip.getObjectId());
@@ -337,9 +340,9 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
         /********** get Gps location service LocationManager object ***********/
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 1, this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, this);
         } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000,1, this);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 2000,1, this);
         }
         else {
             Toast.makeText(getApplicationContext(), "Enable Location Services", Toast.LENGTH_LONG).show();
@@ -413,7 +416,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
      */
     @Override
     public void onProviderEnabled(String provider) {
-        //Toast.makeText(AddPhotoNoteActivity.this, provider+" Enabled", Toast.LENGTH_SHORT).show();
+        Toast.makeText(StartTripActivity.this, provider+" Enabled", Toast.LENGTH_SHORT).show();
     }
 
     /**
