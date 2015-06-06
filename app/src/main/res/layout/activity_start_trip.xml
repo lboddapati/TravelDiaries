@@ -5,10 +5,6 @@
     android:layout_height="match_parent"
     android:background="@color/White">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
 
         <fragment
             xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -20,18 +16,17 @@
             android:name="com.google.android.gms.maps.SupportMapFragment"
             map:cameraZoom="10"
             map:mapType="normal"
-            android:layout_weight="1"/>
+            />
 
         <ExpandableListView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/directions"
-            android:layout_below="@+id/map"
             android:layout_centerHorizontal="true"
-            android:visibility="visible"
+            android:visibility="gone"
             android:paddingTop="@dimen/activity_vertical_margin"
             android:layout_weight="1"/>
-    </LinearLayout>
+
 
     <ImageButton
         android:layout_width="@dimen/small_round_button_diameter"
@@ -44,20 +39,9 @@
         style="?android:borderlessButtonStyle"
         android:background="@drawable/red_circle"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="@dimen/small_horizontal_margin"
-        android:layout_marginTop="@dimen/small_vertical_margin"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Finish Trip"
-        android:id="@+id/finishTrip"
-        android:elevation="@dimen/elevation_high"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:visibility="visible"
         android:layout_marginLeft="@dimen/small_horizontal_margin"
         android:layout_marginTop="@dimen/small_vertical_margin"/>
+
 
 </RelativeLayout>

@@ -48,6 +48,7 @@
         </activity>
         <activity
             android:name=".StartTripActivity"
+            android:theme="@style/YellowActionBarTheme"
             android:label="@string/title_activity_map_trip" >
         </activity>
         <activity

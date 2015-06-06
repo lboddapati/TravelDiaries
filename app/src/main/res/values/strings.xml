@@ -24,6 +24,8 @@
 
     <string name="title_activity_get_place_types">getPlaceTypesActivity</string>
     <string name="action_view_places_visited">Places Visited</string>
+    <string name="action_view_all_directions">View Directions</string>
+    <string name="action_finish_trip">Finish Trip</string>
 
 
 </resources>

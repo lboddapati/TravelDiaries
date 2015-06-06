@@ -2,7 +2,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.traveldiaries.StartTripActivity">
+    <item android:id="@+id/action_finish_trip" android:title="@string/action_finish_trip" android:icon="@drawable/ic_flag_checkered"
+        android:orderInCategory="50" app:showAsAction="always" android:showAsAction="always"/>
     <item android:id="@+id/action_cancel_trip" android:title="@string/action_cancel_trip" android:icon="@drawable/ic_action_cancel"
         android:orderInCategory="100" app:showAsAction="always" android:showAsAction="always"/>
+
+    <item android:id="@+id/action_view_directions" android:title="@string/action_view_all_directions"
+        android:icon="@drawable/ic_action_navigation_menu" android:orderInCategory="200"
+        app:showAsAction="always" android:showAsAction="always" />
+
 
 </menu>

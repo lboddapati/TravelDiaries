@@ -13,11 +13,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
@@ -48,6 +51,8 @@ import java.util.List;
  */
 public class StartTripActivity extends FragmentActivity implements LocationListener {
     private GoogleMap mMap;
+    private Fragment mapFragment;
+
     private ParseObject trip;
     private ParseUser user;
     private String tripname;// = "SomeTrip"; //TODO: Change to actual trip name;
@@ -59,6 +64,8 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
 
     private Location currentLocation;
     private LocationManager locationManager;
+    private ExpandableListView directionsListView;
+    private ImageButton addPicture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,20 +125,19 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
         trip.pinInBackground();
 
         // Draw markers and route on the map.
-        MapHelperClass.drawMarkers(latLngs.subList(1, latLngs.size()-1), address.subList(1, latLngs.size()-1), mMap, BitmapDescriptorFactory.HUE_VIOLET);
+        MapHelperClass.drawMarkers(latLngs.subList(1, latLngs.size() - 1), address.subList(1, latLngs.size() - 1), mMap, BitmapDescriptorFactory.HUE_VIOLET);
         MapHelperClass.drawRoute(route, mMap);
         mMap.addMarker(new MarkerOptions().position(latLngs.get(0))
                 .title(address.get(0))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
         mMap.addMarker(new MarkerOptions().position(latLngs.get(latLngs.size() - 1))
-                .title(address.get(latLngs.size()-1))
+                .title(address.get(latLngs.size() - 1))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngs.get(0), 13.0f));
 
 
-        final ExpandableListView directionsListView = (ExpandableListView) findViewById(R.id.directions);
-        final Button finishTrip = (Button) findViewById(R.id.finishTrip);
-        final ImageButton addPicture = (ImageButton) findViewById(R.id.addPicture);
+        directionsListView = (ExpandableListView) findViewById(R.id.directions);
+        addPicture = (ImageButton) findViewById(R.id.addPicture);
 
         // Display the place to place directions.
         DirectionsExpandableListAdapter adapter = new DirectionsExpandableListAdapter(getBaseContext(), route, names);
@@ -149,38 +155,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
         });
 
         // When Finish Trip is clicked, finish the trip and upload the trip details to Parse database.
-        finishTrip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(StartTripActivity.this);
-                builder.setMessage("Finish trip?");
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            trip.save();
-                            uploadImagesToCloud();
-                            Toast.makeText(StartTripActivity.this, "Trip saved!", Toast.LENGTH_SHORT).show();
-                            trip.unpinInBackground();
-                            Intent prevTrips = new Intent(StartTripActivity.this, PreviousTrip.class);
-                            prevTrips.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(prevTrips);
-                            finish();
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                            Toast.makeText(StartTripActivity.this, "Error saving trip! Try again", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                builder.create().show();
-            }
-        });
+
     }
 
     /**
@@ -269,6 +244,58 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
             });
             builder.create().show();
         }
+        else if (id==R.id.action_finish_trip){
+            AlertDialog.Builder builder = new AlertDialog.Builder(StartTripActivity.this);
+            builder.setMessage("Finish trip?");
+            builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    try {
+                        trip.save();
+                        uploadImagesToCloud();
+                        Toast.makeText(StartTripActivity.this, "Trip saved!", Toast.LENGTH_SHORT).show();
+                        trip.unpinInBackground();
+                        Intent prevTrips = new Intent(StartTripActivity.this, PreviousTrip.class);
+                        prevTrips.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(prevTrips);
+                        finish();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        Toast.makeText(StartTripActivity.this, "Error saving trip! Try again", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            builder.create().show();
+        }
+        else if (id == R.id.action_view_directions) {
+            Animation animation;
+            if (directionsListView.getVisibility() == View.GONE) {
+                animation = AnimationUtils.loadAnimation(StartTripActivity.this, R.anim.swipe_right_to_left);
+                 //mapFragment.getView().startAnimation(animation);
+                 mapFragment.getView().setVisibility(View.GONE);
+                addPicture.setVisibility(View.GONE);
+                directionsListView.startAnimation(animation);
+                directionsListView.setVisibility(View.VISIBLE);
+                item.setIcon(R.drawable.ic_map_white);
+
+            } else if (directionsListView.getVisibility() == View.VISIBLE) {
+                animation = AnimationUtils.loadAnimation(StartTripActivity.this, R.anim.swipe_left_to_right);
+
+                directionsListView.startAnimation(animation);
+                directionsListView.setVisibility(View.GONE);
+                 mapFragment.getView().startAnimation(animation);
+                addPicture.setVisibility(View.VISIBLE);
+                mapFragment.getView().setVisibility(View.VISIBLE);
+                item.setIcon(R.drawable.ic_action_navigation_menu);
+            }
+        }
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -325,9 +352,9 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
-            // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
+            // Try to obtain the map from the SupportMapFragment
+            mapFragment = getSupportFragmentManager().findFragmentById(R.id.map);
+            mMap = ((SupportMapFragment) mapFragment).getMap();
             // Enabling MyLocation Layer of Google Map
             mMap.setMyLocationEnabled(true);
         }
