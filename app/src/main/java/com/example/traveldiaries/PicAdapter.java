@@ -45,10 +45,15 @@ public class PicAdapter extends BaseAdapter {
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         imageView.setPadding(8, 8, 8, 8);
 
-        imageView.setImageBitmap((Bitmap) getItem(position));
+        Bitmap image = getResizedBitmap((Bitmap) getItem(position), imageView.getWidth(), imageView.getHeight());
+        imageView.setImageBitmap(image);
         //imageView.setImageResource(pics[position]);
         textview.setText(names.get(position));
         return convertView;
 
+    }
+
+    public static Bitmap getResizedBitmap(Bitmap inBitmap, int reqWidth, int reqHeight) {
+        return Bitmap.createScaledBitmap(inBitmap, reqWidth, reqHeight, true);
     }
 }

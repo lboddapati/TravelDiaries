@@ -3,6 +3,7 @@ package com.example.traveldiaries;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -44,6 +45,9 @@ public class ViewTripPhotosActivity extends Activity {
         //pic_geotag_timestamp = intent.getStringArrayListExtra("geotag_timestamp");
         String pin = getIntent().getStringExtra("pin");
 
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 2;
+
         ParseQuery<ParseObject> query = ParseQuery.getQuery("TripPhotoNote");
         query.fromPin(pin);
         List<ParseObject> photonotes = null;
@@ -52,7 +56,7 @@ public class ViewTripPhotosActivity extends Activity {
             setTitle(photonotes.size() + " Photos");
             for(ParseObject photonote : photonotes) {
                 byte[] data = photonote.getParseFile("photo").getData();
-                Bitmap photo = BitmapFactory.decodeByteArray(data, 0, data.length);
+                Bitmap photo = BitmapFactory.decodeByteArray(data, 0, data.length, options);
                 String note = photonote.getString("note");
                 String geotagTimeStamp = photonote.getCreatedAt().toString();
                 if (photonote.getString("geotag") != null) {

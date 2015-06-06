@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Criteria;
@@ -282,7 +283,7 @@ public class AddPhotoNoteActivity extends Activity {
             Bitmap b = BitmapFactory.decodeFile(fileName);
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
             if(b != null) {
-                b.compress(Bitmap.CompressFormat.JPEG, 100, byteStream);
+                b.compress(Bitmap.CompressFormat.JPEG, 75, byteStream);
 
                 byte[] data = byteStream.toByteArray();
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
