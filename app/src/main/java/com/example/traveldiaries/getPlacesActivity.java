@@ -288,6 +288,7 @@ public class getPlacesActivity extends FragmentActivity {
 
                     HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                     System.out.println(hm.get("place_id") + "Place");
+                    FunctionLatLong(hm.get("place_id"));
 
                     if (atvPlaces_end.getText().toString().isEmpty()) {
                         //btnFind.setEnabled(false);
@@ -302,7 +303,7 @@ public class getPlacesActivity extends FragmentActivity {
                             toast.show();
                         }
                         else {
-                            FunctionLatLong(hm.get("place_id"));
+
                             //btnFind.setEnabled(true);
                             //categories.setVisibility(View.VISIBLE);
                             setVisibility(categories, View.VISIBLE);
@@ -347,6 +348,7 @@ public class getPlacesActivity extends FragmentActivity {
 
                     HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                     System.out.println(hm.get("place_id") + "Place");
+                    FunctionLatLong_end(hm.get("place_id"));
                     if (atvPlaces_start.getText().toString().isEmpty()) {
                         //btnFind.setEnabled(false);
                         //categories.setVisibility(View.GONE);
@@ -361,7 +363,6 @@ public class getPlacesActivity extends FragmentActivity {
                             toast.show();
                         }
                         else {
-                            FunctionLatLong_end(hm.get("place_id"));
 
                             //btnFind.setEnabled(true);
                             //categories.setVisibility(View.VISIBLE);
@@ -1000,11 +1001,11 @@ public class getPlacesActivity extends FragmentActivity {
 
                     // Setting the position for the marker
                     markerOptions.position(latLng);
-                    String title = name + " : " + vicinity + "\n rating:" +rating+"    " + pricing ;
+                    String title = name + " : " + vicinity;
 
                     // Setting the title for the marker.
                     //This will be displayed on taping the marker
-                    markerOptions.title(title);
+                    markerOptions.title(title).snippet("rating: "+rating+"      "+pricing);
 
                     // Placing a marker on the touched position
                     mGoogleMap.addMarker(markerOptions);
@@ -1025,7 +1026,7 @@ public class getPlacesActivity extends FragmentActivity {
                                 listItems.add(marker.getTitle());
                                 places.add(1, point);
                                 selectedPlacesNames.add(1, title.split(":")[0]);
-                                selectedPlacesAddress.add(1, (title.split(":")[1]).split("\n")[0]);
+                                selectedPlacesAddress.add(1, title.split(":")[1]);
 
                             } else {
                                 Toast.makeText(getPlacesActivity.this, "Only 8 waypoints allowed!", Toast.LENGTH_SHORT).show();
