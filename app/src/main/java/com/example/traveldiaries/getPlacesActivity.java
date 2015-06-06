@@ -42,6 +42,7 @@ import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
@@ -271,7 +272,7 @@ public class getPlacesActivity extends FragmentActivity {
                         clearPlaces();
                         clearAllSelections();
                     } else {
-                        if (atvPlaces_end.getText().toString() == atvPlaces_start.getText().toString()) {
+                        if (atvPlaces_start.getText().toString() == atvPlaces_end.getText().toString()) {
                             Toast toast = Toast.makeText(getBaseContext(), "Both origin and destination are same. Please change your selection!", Toast.LENGTH_SHORT);
                             toast.show();
                         }
@@ -287,7 +288,7 @@ public class getPlacesActivity extends FragmentActivity {
 
                     HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                     System.out.println(hm.get("place_id") + "Place");
-                    FunctionLatLong(hm.get("place_id"));
+
                     if (atvPlaces_end.getText().toString().isEmpty()) {
                         //btnFind.setEnabled(false);
                         //categories.setVisibility(View.GONE);
@@ -296,10 +297,18 @@ public class getPlacesActivity extends FragmentActivity {
                         clearPlaces();
                         clearAllSelections();
                     } else {
-                        //btnFind.setEnabled(true);
-                        //categories.setVisibility(View.VISIBLE);
-                        setVisibility(categories, View.VISIBLE);
-                        getPlaces();
+                        if (atvPlaces_start.getText().toString().equalsIgnoreCase(atvPlaces_end.getText().toString())) {
+                            Toast toast = Toast.makeText(getPlacesActivity.this, "Both origin and destination are same. Please change your selection!", Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                        else {
+                            FunctionLatLong(hm.get("place_id"));
+                            //btnFind.setEnabled(true);
+                            //categories.setVisibility(View.VISIBLE);
+                            setVisibility(categories, View.VISIBLE);
+                            getPlaces();
+                        }
+
                     }
                 }
             });
@@ -326,6 +335,7 @@ public class getPlacesActivity extends FragmentActivity {
                         clearPlaces();
                         clearAllSelections();
                     }
+
                 }
             });
 
@@ -337,7 +347,6 @@ public class getPlacesActivity extends FragmentActivity {
 
                     HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                     System.out.println(hm.get("place_id") + "Place");
-                    FunctionLatLong_end(hm.get("place_id"));
                     if (atvPlaces_start.getText().toString().isEmpty()) {
                         //btnFind.setEnabled(false);
                         //categories.setVisibility(View.GONE);
@@ -346,10 +355,19 @@ public class getPlacesActivity extends FragmentActivity {
                         clearPlaces();
                         clearAllSelections();
                     } else {
-                        //btnFind.setEnabled(true);
-                        //categories.setVisibility(View.VISIBLE);
-                        setVisibility(categories, View.VISIBLE);
-                        getPlaces();
+                        //Toast.makeText(getPlacesActivity.this,"Destination",Toast.LENGTH_SHORT).show();
+                        if (atvPlaces_end.getText().toString().equalsIgnoreCase(atvPlaces_start.getText().toString())) {
+                            Toast toast = Toast.makeText(getPlacesActivity.this, "Both origin and destination are same. Please change your selection!", Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                        else {
+                            FunctionLatLong_end(hm.get("place_id"));
+
+                            //btnFind.setEnabled(true);
+                            //categories.setVisibility(View.VISIBLE);
+                            setVisibility(categories, View.VISIBLE);
+                            getPlaces();
+                        }
                     }
                 }
             });
@@ -384,9 +402,11 @@ public class getPlacesActivity extends FragmentActivity {
                     public void onClick(DialogInterface dialogInterface, int id) {
                         String tripName = input.getText().toString();
 
-                        if (TextUtils.getTrimmedLength(tripName) == 0) {
+                        if ((tripName.isEmpty()) || (tripName.matches("^\\s*$"))) {
                             input.setError("Trip Name cannot be empty. Please enter some text");
-                            Toast.makeText(getPlacesActivity.this, "Trip Name cannot be empty", Toast.LENGTH_LONG).show();
+                            Toast toast = Toast.makeText(getBaseContext(), "Trip name cannot be empty!", Toast.LENGTH_SHORT);
+                            toast.show();
+
                         } else {
                             Intent intent = new Intent(getApplicationContext(), StartTripActivity.class);
                             intent.putParcelableArrayListExtra("latLngs", places);
@@ -795,7 +815,7 @@ public class getPlacesActivity extends FragmentActivity {
             String input="";
 
             try {
-                input = "input=" + URLEncoder.encode(place[0], "utf-8");
+                input = "input=" + URLEncoder.encode(place[0], "utf-8").replace(" ","%20");
                 System.out.println("URL ENCODED INPUT = "+ input);
             } catch (UnsupportedEncodingException e1) {
                 e1.printStackTrace();
@@ -916,12 +936,16 @@ public class getPlacesActivity extends FragmentActivity {
      */
     private class ParserTask extends AsyncTask<String, Integer, List<HashMap<String, String>>> {
 
+        /*View view = View.inflate(getPlacesActivity.this, R.layout.activity_get_places, null);
+        ProgressBar spinner = new ProgressBar(getPlacesActivity.this);
+        ProgressBar spinner = (ProgressBar)findViewById(R.id.progressBar);*/
         JSONObject jObject;
 
         // Invoked by execute() method of this object
         @Override
         protected List<HashMap<String, String>> doInBackground(String... jsonData) {
 
+            //spinner.setVisibility(view.VISIBLE);
             List<HashMap<String, String>> places = null;
             PlaceJSONParser placeJsonParser = new PlaceJSONParser();
 
@@ -940,6 +964,7 @@ public class getPlacesActivity extends FragmentActivity {
 
         // Executed after the complete execution of doInBackground() method
         protected void onPostExecute(List<HashMap<String, String>> list) {
+            //spinner.setVisibility(view.GONE);
 
             if (list != null) {
 
@@ -965,14 +990,21 @@ public class getPlacesActivity extends FragmentActivity {
                     // Getting vicinity
                     final String vicinity = hmPlace.get("vicinity");
 
+                    //Get ratings
+                    final String rating = hmPlace.get("rating");
+
+                    //Get price level
+                    final String pricing = hmPlace.get("pricing");
+
                     LatLng latLng = new LatLng(lat, lng);
 
                     // Setting the position for the marker
                     markerOptions.position(latLng);
+                    String title = name + " : " + vicinity + "\n rating:" +rating+"    " + pricing ;
 
                     // Setting the title for the marker.
                     //This will be displayed on taping the marker
-                    markerOptions.title(name + " : " + vicinity);
+                    markerOptions.title(title);
 
                     // Placing a marker on the touched position
                     mGoogleMap.addMarker(markerOptions);
@@ -993,7 +1025,8 @@ public class getPlacesActivity extends FragmentActivity {
                                 listItems.add(marker.getTitle());
                                 places.add(1, point);
                                 selectedPlacesNames.add(1, title.split(":")[0]);
-                                selectedPlacesAddress.add(1, title.split(":")[1]);
+                                selectedPlacesAddress.add(1, (title.split(":")[1]).split("\n")[0]);
+
                             } else {
                                 Toast.makeText(getPlacesActivity.this, "Only 8 waypoints allowed!", Toast.LENGTH_SHORT).show();
                             }

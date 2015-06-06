@@ -146,6 +146,9 @@ public class PlaceJSONParser {
         HashMap<String, String> place = new HashMap<String, String>();
         String placeName = "-NA-";
         String vicinity="-NA-";
+        String rating = "-NA-";
+        int pricing = 0;
+        String pricingLevel ="-NA-";
         String latitude="";
         String longitude="";
 
@@ -159,6 +162,15 @@ public class PlaceJSONParser {
             if(!jPlace.isNull("vicinity")){
                 vicinity = jPlace.getString("vicinity");
             }
+            if(!jPlace.isNull("rating")){
+                rating = jPlace.getString("rating");
+            }
+            if(!jPlace.isNull("price_level")){
+                pricingLevel = "";
+                pricing = jPlace.getInt("price_level");
+                for(int i=0;i<pricing; i++)
+                    pricingLevel +="$";
+            }
 
             latitude = jPlace.getJSONObject("geometry").getJSONObject("location").getString("lat");
             longitude = jPlace.getJSONObject("geometry").getJSONObject("location").getString("lng");
@@ -167,6 +179,8 @@ public class PlaceJSONParser {
             place.put("vicinity", vicinity);
             place.put("lat", latitude);
             place.put("lng", longitude);
+            place.put("rating",rating);
+            place.put("pricing",pricingLevel);
 
         } catch (JSONException e) {
             e.printStackTrace();
