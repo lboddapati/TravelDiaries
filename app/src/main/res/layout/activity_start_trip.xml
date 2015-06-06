@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/White">
@@ -35,13 +37,14 @@
         android:layout_width="@dimen/small_round_button_diameter"
         android:layout_height="@dimen/small_round_button_diameter"
         android:id="@+id/addPicture"
-        android:elevation="@dimen/elevation_high"
-        android:src="@android:drawable/ic_menu_camera"
+        android:elevation="34dp"
+        android:visibility="visible"
+        android:src="@drawable/ic_action_white_camera"
         android:tint="@android:color/white"
+        style="?android:borderlessButtonStyle"
         android:background="@drawable/red_circle"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:visibility="visible"
         android:layout_marginRight="@dimen/small_horizontal_margin"
         android:layout_marginTop="@dimen/small_vertical_margin"/>
 

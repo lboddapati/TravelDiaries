@@ -49,6 +49,7 @@ public class ViewTripPhotosActivity extends Activity {
         List<ParseObject> photonotes = null;
         try {
             photonotes = query.find();
+            setTitle(photonotes.size() + " Photos");
             for(ParseObject photonote : photonotes) {
                 byte[] data = photonote.getParseFile("photo").getData();
                 Bitmap photo = BitmapFactory.decodeByteArray(data, 0, data.length);

@@ -1,8 +1,28 @@
-<LinearLayout
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@color/White"
     xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/DeepPurple"
+        android:textColor="@color/White"
+        android:textSize="15sp"
+        android:visibility="gone"
+        android:layout_alignParentTop="true"
+        android:padding="5dp"
+        android:id="@+id/photoCount"/>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/places"
+        android:layout_below="@id/photoCount"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:visibility="visible"/>
 
     <fragment
         xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -13,14 +33,5 @@
         tools:context="com.example.traveldiaries.ViewTripActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         map:cameraZoom="10"
-        map:mapType="normal"
-        android:layout_weight="1"/>
-
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/places"
-        android:layout_below="@+id/map"
-        android:layout_centerHorizontal="true"
-        android:layout_weight="1"/>
-</LinearLayout>
+        map:mapType="normal"/>
+</RelativeLayout>

@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.traveldiaries.ViewTripPhotosActivity">
     <item android:id="@+id/action_view_all_photos" android:title="@string/action_view_all_photos"
-        android:icon="@android:drawable/ic_menu_gallery" android:orderInCategory="100"
+        android:icon="@drawable/ic_action_picture" android:orderInCategory="100"
+        app:showAsAction="always" android:showAsAction="always" />
+    <item android:id="@+id/action_view_places" android:title="@string/action_view_places_visited"
+        android:icon="@drawable/ic_action_navigation_menu" android:orderInCategory="200"
         app:showAsAction="always" android:showAsAction="always" />
 </menu>

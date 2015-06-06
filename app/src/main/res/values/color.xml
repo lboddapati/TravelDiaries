@@ -156,4 +156,7 @@
 <color name="Navy">#000080</color>
 <color name="Black">#000000</color>
 <color name="Blue">#0091EA</color>
+<color name="LighterPurple">#ff4e2cbb</color>
+<color name="DeepPurple">#4527A0</color>
+<color name="DeeperPurple">#311B92</color>
 </resources>

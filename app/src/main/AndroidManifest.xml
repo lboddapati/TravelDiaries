@@ -57,6 +57,7 @@
         </activity>
         <activity
             android:name=".ViewTripActivity"
+            android:theme="@style/PurpleActionBarTheme"
             android:label="@string/title_activity_view_trip" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -64,6 +65,7 @@
         </activity>
         <activity
             android:name=".ViewTripPhotosActivity"
+            android:theme="@style/PurpleActionBarTheme"
             android:label="@string/title_activity_my_photos" >
         </activity>
         <activity
