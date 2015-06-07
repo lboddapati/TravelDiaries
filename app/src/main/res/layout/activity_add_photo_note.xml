@@ -69,8 +69,8 @@
     </RelativeLayout>
 
     <ImageView
-        android:layout_width="280dp"
-        android:layout_height="280dp"
+        android:layout_width="@dimen/addPhotoNote_previewImageWidth"
+        android:layout_height="@dimen/addPhotoNote_previewImageHeight"
         android:id="@+id/picFocused"
         android:layout_below="@id/menu_bar"
         android:layout_centerHorizontal="true"

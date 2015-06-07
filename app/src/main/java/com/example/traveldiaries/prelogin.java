@@ -6,8 +6,12 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Layout;
+import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,37 +23,32 @@ import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import android.widget.AdapterView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class prelogin extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_prelogin);
+
         if(ParseUser.getCurrentUser() != null) {
             Intent intent = new Intent(this, PreviousTrip.class);
             startActivity(intent);
             finish();
         }
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_prelogin);
+        final DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        // Hide the status bar.
-        //View decorView = getWindow().getDecorView();
-        //int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        //decorView.setSystemUiVisibility(uiOptions);
-
-        // Remember that you should never show the action bar if the
-        // status bar is hidden, so hide that too if necessary.
-        //ActionBar actionBar = getActionBar();
-        //actionBar.hide();
-
-        //Bitmap td1 = BitmapFactory.decodeResource(getResources(), R.drawable.startup_background);
-        //ImageView imageview=(ImageView) findViewById(R.id.imageview);
-        //imageview.setImageBitmap(td1);
-
+        Bitmap bm = ImageProcessingHelperClass.decodeSampledBitmapFromResource(getResources()
+                        , R.drawable.startup_background, metrics.widthPixels, metrics.heightPixels);
+        BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bm);
+        getWindow().setBackgroundDrawable(bitmapDrawable);
 
         Button startButton = (Button) findViewById(R.id.button);
+        startButton.setVisibility(View.VISIBLE);
         startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                  {

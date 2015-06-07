@@ -87,8 +87,8 @@ public class PreviousTrip extends Activity {
                 // Else display taken trips
                 else {
                     noTrips = false;
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inSampleSize = 2;  //TODO: set optimal size;
+                    //BitmapFactory.Options options = new BitmapFactory.Options();
+                    //options.inSampleSize = 2;  //TODO: set optimal size;
 
                     PicAdapter adapter = new PicAdapter(this, trip_names, trip_icons);
                     gridview.setAdapter(adapter);
@@ -108,7 +108,9 @@ public class PreviousTrip extends Activity {
                             photoNote = picsQuery.getFirst();
                             if (photoNote != null) {
                                 byte[] data = photoNote.getParseFile("photo").getData();
-                                icon = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+                                icon = ImageProcessingHelperClass.decodeSampledBitmapFromByteArry(data
+                                            , adapter.getImageWidth(), adapter.getImageHeight());
+                                //icon = BitmapFactory.decodeByteArray(data, 0, data.length, options);
                             }
                         } catch (ParseException e) {
                             Log.d("PHOTOS", "Error:: fetching photos!!");
@@ -116,7 +118,9 @@ public class PreviousTrip extends Activity {
                         } finally {
                             // If no photos are available for the trip, use the default icon.
                             if (icon == null) {
-                                icon = BitmapFactory.decodeResource(getResources(), R.drawable.defaulticon, options);
+                                //icon = BitmapFactory.decodeResource(getResources(), R.drawable.defaulticon, options);
+                                icon = ImageProcessingHelperClass.decodeSampledBitmapFromResource(getResources()
+                                    , R.drawable.defaulticon, adapter.getImageWidth(), adapter.getImageHeight());
                             }
                             trip_icons.add(icon);
                             adapter.notifyDataSetChanged();

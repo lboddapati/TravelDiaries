@@ -157,6 +157,29 @@ public class MapHelperClass {
      * Method that takes in a List of LatLngs and draw markers on the map at those locations.
      *
      * @param points The List of points where markers must be drawn.
+     * @param title The text to be displayed in the info window of the marked points.
+     * @param snippet The text to be displayed below title in the info window.
+     * @param mMap The map object on which the markers must be plotted.
+     * @param color The color of the markers. If it is null, default color (RED) will be used.
+     */
+    public static void drawMarkers(List<LatLng> points, List<String> title, List<String> snippet, GoogleMap mMap, Float color) {
+        if(points!= null && points.size()>0) {
+            MarkerOptions options = new MarkerOptions();
+            if(color == null) {
+                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            } else {
+                options.icon(BitmapDescriptorFactory.defaultMarker(color));
+            }
+            for (int i = 0; i < points.size(); i++) {
+                mMap.addMarker(options.position(points.get(i)).title(title.get(i)).snippet(snippet.get(i)));
+            }
+        }
+    }
+
+    /**
+     * Method that takes in a List of LatLngs and draw markers on the map at those locations.
+     *
+     * @param points The List of points where markers must be drawn.
      * @param mMap The map object on which the markers must be plotted.
      * @param color The color of the markers. If it is null, default color (RED) will be used.
      */

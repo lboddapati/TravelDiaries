@@ -1,6 +1,7 @@
 package com.example.traveldiaries;
 import android.app.Activity;
 
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -10,6 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import android.content.Intent;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.parse.LogInCallback;
@@ -26,6 +28,9 @@ public class LoginActivity extends Activity {
     private EditText usernameView;
     private EditText passwordView;
 
+    private ProgressDialog progressDialog;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if(ParseUser.getCurrentUser() != null) {
@@ -40,6 +45,10 @@ public class LoginActivity extends Activity {
 
         usernameView = (EditText) findViewById(R.id.username);
         passwordView = (EditText) findViewById(R.id.password);
+
+        progressDialog = new ProgressDialog(LoginActivity.this);
+        progressDialog.setCancelable(false);
+        progressDialog.setTitle("Please wait...");
 
         Button signInButton = (Button) findViewById(R.id.sign_in_button);
         signInButton.setOnClickListener(new View.OnClickListener() {
@@ -115,6 +124,7 @@ public class LoginActivity extends Activity {
         Intent intent = new Intent(LoginActivity.this, PreviousTrip.class);
         startActivity(intent);
         finish();
+        progressDialog.dismiss();
     }
 
     /**
@@ -124,7 +134,11 @@ public class LoginActivity extends Activity {
         final String userID = usernameView.getText().toString();
         final String password = passwordView.getText().toString();
 
+        progressDialog.setMessage("Loggin in...");
+        progressDialog.show();
+
         ParseUser.logInInBackground(userID, password, new LogInCallback() {
+
             @Override
             public void done(ParseUser parseUser, ParseException e) {
                 if(parseUser != null) {
@@ -154,12 +168,16 @@ public class LoginActivity extends Activity {
         final String userID = usernameView.getText().toString();
         final String password = passwordView.getText().toString();
 
+        progressDialog.setMessage("Creating account...");
+        progressDialog.show();
+
         ParseUser user = new ParseUser();
         user.setUsername(userID);
         user.setPassword(password);
         user.signUpInBackground(new SignUpCallback() {
             @Override
             public void done(ParseException e) {
+
                 if(e == null) {
                     Toast.makeText(LoginActivity.this, "Registration Success!", Toast.LENGTH_SHORT).show();
                     SignedIn();

@@ -6,12 +6,15 @@ package com.example.traveldiaries;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
@@ -71,6 +74,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class getPlacesActivity extends FragmentActivity {
     private GoogleMap mGoogleMap;
@@ -81,10 +85,6 @@ public class getPlacesActivity extends FragmentActivity {
     private AutocompletePlacesTask placesTask;
     private AutocompleteTask autoCompleteTask;
     private ImageButton btnStartTrip;
-    //private Button btnFind;
-    //private CheckBox chk_restaurants;
-    //private CheckBox chk_bars;
-    //private CheckBox chk_tourist;
     private HorizontalScrollView categories;
     private Button restaurantsBtn;
     private Button nightLifeBtn;
@@ -93,7 +93,7 @@ public class getPlacesActivity extends FragmentActivity {
     private Button popularBtn;
     private Button barsBtn;
 
-    private JSONObject routesJSON;// = new JSONObject();
+    private JSONObject routesJSON;
     private ArrayList<LatLng> places = new ArrayList<LatLng>();
     private ArrayList<LatLng> points = new ArrayList<LatLng>();
     private ArrayList<Polyline> polylines = new ArrayList<Polyline>();
@@ -111,29 +111,14 @@ public class getPlacesActivity extends FragmentActivity {
     private double mLongitude_start = 0;
     private double mLatitude_end = 0;
     private double mLongitude_end = 0;
+    private Address currentLocation_address;
 
     private ListView listView;
     private ArrayList<String> listItems;
     private ArrayAdapter<String> adapter;
 
-    /*CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            switch (buttonView.getId()) {
-                case R.id.chk_bars:
-                    bars = isChecked;
-                    break;
-                case R.id.chk_restaurants:
-                    restaurant = isChecked;
-                    break;
-                case R.id.chk_tourist:
-                    tourist = isChecked;
-                    break;
-                default:
-                    break;
-            }
-        }
-    };*/
+    ProgressDialog progressDialog;
+
 
     View.OnClickListener categoriesClickListener = new View.OnClickListener() {
         @Override
@@ -142,32 +127,26 @@ public class getPlacesActivity extends FragmentActivity {
             Button buttonView = (Button) v;
             switch (buttonView.getId()) {
                 case R.id.popular:
-                    //Toast.makeText(getPlacesActivity.this, "popular button clicked", Toast.LENGTH_SHORT).show();
                     popular = !(popular);
                     selected = popular;
                     break;
                 case R.id.restaurants:
                     restaurant = !(restaurant);
-                    //Toast.makeText(getPlacesActivity.this, "restaurants button clicked:: "+restaurant, Toast.LENGTH_SHORT).show();
                     selected = restaurant;
                     break;
                 case R.id.nightLife:
-                    //Toast.makeText(getPlacesActivity.this, "nightLife button clicked", Toast.LENGTH_SHORT).show();
                     nightLife = !(nightLife);
                     selected = nightLife;
                     break;
                 case R.id.bars:
                     bars = !(bars);
-                    //Toast.makeText(getPlacesActivity.this, "bars button clicked:: "+bars, Toast.LENGTH_SHORT).show();
                     selected = bars;
                     break;
                 case R.id.tourist:
-                    //Toast.makeText(getPlacesActivity.this, "tourist button clicked", Toast.LENGTH_SHORT).show();
                     tourist = !(tourist);
                     selected = tourist;
                     break;
                 case R.id.fuelUp:
-                    //Toast.makeText(getPlacesActivity.this, "fuelUp button clicked", Toast.LENGTH_SHORT).show();
                     fuel = !(fuel);
                     selected = fuel;
                     break;
@@ -176,10 +155,8 @@ public class getPlacesActivity extends FragmentActivity {
             }
 
             if(selected) {
-                //Toast.makeText(getPlacesActivity.this, "button selected", Toast.LENGTH_SHORT).show();
                 setSelection(buttonView);
             } else {
-                //Toast.makeText(getPlacesActivity.this, "button de selected", Toast.LENGTH_SHORT).show();
                 clearSelection(buttonView);
             }
 
@@ -219,6 +196,11 @@ public class getPlacesActivity extends FragmentActivity {
         } else {
             setContentView(R.layout.activity_get_places);
 
+            progressDialog =  new ProgressDialog(getPlacesActivity.this);
+            progressDialog.setCancelable(false);
+            progressDialog.setTitle("Please wait...");
+            progressDialog.setMessage("Fetching results");
+
             //final int STATUS_BAR_COLOR = getResources().getColor(R.color.Blue);
             //getWindow().setStatusBarColor(STATUS_BAR_COLOR);
 
@@ -236,13 +218,10 @@ public class getPlacesActivity extends FragmentActivity {
             categories.setVisibility(View.GONE);
             listView = (ListView) findViewById(R.id.listView2);
             listView.setVisibility(View.GONE);
-            //btnFind = (Button) findViewById(R.id.btn_find);
-            //btnFind.setEnabled(false);
+
             atvPlaces_start = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_start);
             atvPlaces_end = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView_end);
-            //chk_tourist = (CheckBox) findViewById(R.id.chk_tourist);
-            //chk_restaurants = (CheckBox) findViewById(R.id.chk_restaurants);
-            //chk_bars = (CheckBox) findViewById(R.id.chk_bars);
+
             restaurantsBtn = (Button) findViewById(R.id.restaurants);
             touristBtn = (Button) findViewById(R.id.tourist);
             fuelBtn = (Button) findViewById(R.id.fuelUp);
@@ -288,7 +267,7 @@ public class getPlacesActivity extends FragmentActivity {
 
                     HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                     System.out.println(hm.get("place_id") + "Place");
-                    FunctionLatLong(hm.get("place_id"));
+                    //FunctionLatLong(hm.get("place_id"));
 
                     if (atvPlaces_end.getText().toString().isEmpty()) {
                         //btnFind.setEnabled(false);
@@ -303,7 +282,7 @@ public class getPlacesActivity extends FragmentActivity {
                             toast.show();
                         }
                         else {
-
+                            FunctionLatLong(hm.get("place_id"));
                             //btnFind.setEnabled(true);
                             //categories.setVisibility(View.VISIBLE);
                             setVisibility(categories, View.VISIBLE);
@@ -348,7 +327,7 @@ public class getPlacesActivity extends FragmentActivity {
 
                     HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                     System.out.println(hm.get("place_id") + "Place");
-                    FunctionLatLong_end(hm.get("place_id"));
+                    //FunctionLatLong_end(hm.get("place_id"));
                     if (atvPlaces_start.getText().toString().isEmpty()) {
                         //btnFind.setEnabled(false);
                         //categories.setVisibility(View.GONE);
@@ -363,6 +342,7 @@ public class getPlacesActivity extends FragmentActivity {
                             toast.show();
                         }
                         else {
+                            FunctionLatLong_end(hm.get("place_id"));
 
                             //btnFind.setEnabled(true);
                             //categories.setVisibility(View.VISIBLE);
@@ -380,69 +360,60 @@ public class getPlacesActivity extends FragmentActivity {
             // set up the map
             setUpMapIfNeeded();
 
-            //chk_bars.setOnCheckedChangeListener(checkBoxListener);
-            //chk_restaurants.setOnCheckedChangeListener(checkBoxListener);
-            //chk_tourist.setOnCheckedChangeListener(checkBoxListener);
+            btnStartTrip.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
 
 
-        btnStartTrip.setOnClickListener(new View.OnClickListener() {
+                    View view = View.inflate(getPlacesActivity.this, R.layout.dialogbox, null);
 
-            @Override
-            public void onClick(View v) {
+                    final AlertDialog.Builder dialogBox = new AlertDialog.Builder(getPlacesActivity.this);
+                    dialogBox.setTitle("Trip Name");
+                    dialogBox.setView(view);
 
+                    final EditText input = (EditText) view.findViewById(R.id.dialogboxText);
+                    dialogBox.setPositiveButton("Start Trip", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int id) {
+                            String tripName = input.getText().toString();
 
-                View view = View.inflate(getPlacesActivity.this, R.layout.dialogbox, null);
+                            if ((tripName.isEmpty()) || (tripName.matches("^\\s*$"))) {
+                                input.setError("Trip Name cannot be empty. Please enter some text");
+                                Toast toast = Toast.makeText(getBaseContext(), "Trip name cannot be empty!", Toast.LENGTH_SHORT);
+                                toast.show();
 
-                final AlertDialog.Builder dialogBox = new AlertDialog.Builder(getPlacesActivity.this);
-                dialogBox.setTitle("Trip Name");
-                dialogBox.setView(view);
+                            } else {
+                                Intent intent = new Intent(getApplicationContext(), StartTripActivity.class);
+                                intent.putParcelableArrayListExtra("latLngs", places);
+                                intent.putStringArrayListExtra("names", selectedPlacesNames);
+                                intent.putStringArrayListExtra("address", selectedPlacesAddress);
+                                intent.putExtra("route", routesJSON.toString());
+                                intent.putExtra("tripName", tripName);
+                                startActivity(intent);
+                                finish();
+                            }
 
-                final EditText input = (EditText) view.findViewById(R.id.dialogboxText);
-                dialogBox.setPositiveButton("Start Trip", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int id) {
-                        String tripName = input.getText().toString();
-
-                        if ((tripName.isEmpty()) || (tripName.matches("^\\s*$"))) {
-                            input.setError("Trip Name cannot be empty. Please enter some text");
-                            Toast toast = Toast.makeText(getBaseContext(), "Trip name cannot be empty!", Toast.LENGTH_SHORT);
-                            toast.show();
-
-                        } else {
-                            Intent intent = new Intent(getApplicationContext(), StartTripActivity.class);
-                            intent.putParcelableArrayListExtra("latLngs", places);
-                            intent.putStringArrayListExtra("names", selectedPlacesNames);
-                            intent.putStringArrayListExtra("address", selectedPlacesAddress);
-                            intent.putExtra("route", routesJSON.toString());
-                            intent.putExtra("tripName", tripName);
-                            startActivity(intent);
-                            finish();
+                        }
+                    });
+                    dialogBox.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialogInterface, int id) {
+                            dialogInterface.cancel();
                         }
 
-                    }
-                });
-                dialogBox.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInterface, int id) {
-                        dialogInterface.cancel();
-                    }
+                    });
+                    dialogBox.create().show();
+                }
 
-                });
-                dialogBox.create().show();
-            }
+            });
 
-        });
-
-        //chk_bars.setOnCheckedChangeListener(checkBoxListener);
-        //chk_restaurants.setOnCheckedChangeListener(checkBoxListener);
-        //chk_tourist.setOnCheckedChangeListener(checkBoxListener);
-
-        restaurantsBtn.setOnClickListener(categoriesClickListener);
-        popularBtn.setOnClickListener(categoriesClickListener);
-        fuelBtn.setOnClickListener(categoriesClickListener);
-        nightLifeBtn.setOnClickListener(categoriesClickListener);
-        touristBtn.setOnClickListener(categoriesClickListener);
-        barsBtn.setOnClickListener(categoriesClickListener);
-    }
+            restaurantsBtn.setOnClickListener(categoriesClickListener);
+            popularBtn.setOnClickListener(categoriesClickListener);
+            fuelBtn.setOnClickListener(categoriesClickListener);
+            nightLifeBtn.setOnClickListener(categoriesClickListener);
+            touristBtn.setOnClickListener(categoriesClickListener);
+            barsBtn.setOnClickListener(categoriesClickListener);
+        }
     }
 
     private void clearAllSelections() {
@@ -514,10 +485,9 @@ public class getPlacesActivity extends FragmentActivity {
             btnStartTrip.setVisibility(View.GONE);
             //Toast.makeText(this, "No route found", Toast.LENGTH_LONG).show();
         } else {
+            progressDialog.show();
             btnStartTrip.setVisibility(View.VISIBLE);
-
             polylines = MapHelperClass.drawRoute(routesJSON, mGoogleMap);
-
 
             JSONObject overviewPolyline = null;
             try {
@@ -528,6 +498,7 @@ public class getPlacesActivity extends FragmentActivity {
 
             } catch (JSONException e) {
                 e.printStackTrace();
+                progressDialog.dismiss();
             }
         }
 
@@ -596,8 +567,14 @@ public class getPlacesActivity extends FragmentActivity {
         System.out.println("In set");
 
         places.add(new LatLng(lat_start, long_start));
-        selectedPlacesNames.add(atvPlaces_start.getText().toString().split(",")[0]);
-        selectedPlacesAddress.add(atvPlaces_start.getText().toString());
+        if((atvPlaces_start.getText().toString().equalsIgnoreCase("Your Location")) && (currentLocation_address != null)) {
+            //Toast.makeText(this, currentLocation_address.toString(), Toast.LENGTH_LONG).show();
+            selectedPlacesNames.add(currentLocation_address.getLocality());
+            selectedPlacesAddress.add(currentLocation_address.getAddressLine(0));
+        } else {
+            selectedPlacesNames.add(atvPlaces_start.getText().toString().split(",")[0]);
+            selectedPlacesAddress.add(atvPlaces_start.getText().toString());
+        }
 
         places.add(new LatLng(lat_end, long_end));
         selectedPlacesNames.add(atvPlaces_end.getText().toString().split(",")[0]);
@@ -1005,7 +982,7 @@ public class getPlacesActivity extends FragmentActivity {
 
                     // Setting the title for the marker.
                     //This will be displayed on taping the marker
-                    markerOptions.title(title).snippet("rating: "+rating+"      "+pricing);
+                    markerOptions.title(title).snippet("rating: "+rating+"     price level: "+pricing);
 
                     // Placing a marker on the touched position
                     mGoogleMap.addMarker(markerOptions);
@@ -1057,9 +1034,46 @@ public class getPlacesActivity extends FragmentActivity {
                         polylines = MapHelperClass.drawRoute(routesJSON, mGoogleMap);
                     }
                 });
+
+                progressDialog.dismiss();
             }
         }
 
+    }
+
+    public class ReverseGeocodeLookupTask extends AsyncTask <Void, Void, Address> {
+        private ProgressDialog dialog;
+        private Location currentLocation;
+
+        @Override
+        protected void onPreExecute() {
+            this.dialog = ProgressDialog.show(getPlacesActivity.this, "Please wait...",
+                    "Requesting current location lookup", true);
+        }
+
+        @Override
+        protected Address doInBackground(Void... params) {
+            if (currentLocation != null)
+            {
+                try {
+                    List<Address> results = new Geocoder(getPlacesActivity.this, Locale.US)
+                            .getFromLocation(currentLocation.getLatitude(), currentLocation.getLongitude(), 1);
+                    if(results != null && results.size() >0) {
+                        currentLocation_address = results.get(0);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return currentLocation_address;
+        }
+
+        @Override
+        protected void onPostExecute(Address result)
+        {
+            this.dialog.cancel();
+            //Toast.makeText(getPlacesActivity.this, "Your Locality is: " + result, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private boolean canAddMorePlaces() {
@@ -1074,6 +1088,25 @@ public class getPlacesActivity extends FragmentActivity {
 
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(12));
+
+        atvPlaces_start.setText("Your Location");
+
+        if (atvPlaces_end.getText().toString().isEmpty()) {
+            setVisibility(categories, View.GONE);
+            btnStartTrip.setVisibility(View.GONE);
+            clearPlaces();
+            clearAllSelections();
+        } else {
+            if (atvPlaces_start.getText().toString().equalsIgnoreCase(atvPlaces_end.getText().toString())) {
+                Toast toast = Toast.makeText(getPlacesActivity.this, "Both origin and destination are same. Please change your selection!", Toast.LENGTH_SHORT);
+                toast.show();
+            }
+            else {
+                setVisibility(categories, View.VISIBLE);
+                getPlaces();
+            }
+
+        }
 
     }
 
@@ -1107,33 +1140,50 @@ public class getPlacesActivity extends FragmentActivity {
 
                 // Enabling MyLocation in Google Map
                 mGoogleMap.setMyLocationEnabled(true);
-
-                // Getting LocationManager object from System Service LOCATION_SERVICE
-                LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-                // Creating a criteria object to retrieve provider
-                Criteria criteria = new Criteria();
-
-                // Getting the name of the best provider
-                //String provider = locationManager.getBestProvider(criteria, true);
-                String provider = null;
-                if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    provider = LocationManager.GPS_PROVIDER;
-                } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                    provider = LocationManager.NETWORK_PROVIDER;
-                }
-
-                if (provider != null) {
-                    // Getting Current Location From GPS
-                    Location location = locationManager.getLastKnownLocation(provider);
-
-                    if (location != null) {
-                        onLocationChanged(location);
+                getUserLocation();
+                mGoogleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+                    @Override
+                    public boolean onMyLocationButtonClick() {
+                        return getUserLocation();
                     }
-                }
-
+                });
             }
         }
+    }
+
+    private boolean getUserLocation() {
+        // Getting LocationManager object from System Service LOCATION_SERVICE
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        // Creating a criteria object to retrieve provider
+        Criteria criteria = new Criteria();
+
+        // Getting the name of the best provider
+        //String provider = locationManager.getBestProvider(criteria, true);
+        String provider = null;
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            provider = LocationManager.GPS_PROVIDER;
+        } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            provider = LocationManager.NETWORK_PROVIDER;
+        }
+
+        if (provider != null) {
+            // Getting Current Location From GPS
+            Location location = locationManager.getLastKnownLocation(provider);
+
+            if (location != null) {
+                ReverseGeocodeLookupTask task = new ReverseGeocodeLookupTask();
+                task.currentLocation = location;
+                task.execute();
+
+                onLocationChanged(location);
+
+                return true;
+            }
+
+            return false;
+        }
+        return false;
     }
 
 }

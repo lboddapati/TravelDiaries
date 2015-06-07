@@ -5,6 +5,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -34,14 +36,18 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +61,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
 
     private ParseObject trip;
     private ParseUser user;
-    private String tripname;// = "SomeTrip"; //TODO: Change to actual trip name;
+    private String tripname;
 
     private ArrayList<String> names;
     private ArrayList<String> address;
@@ -100,6 +106,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
         names = intent.getStringArrayListExtra("names");
         address = intent.getStringArrayListExtra("address");
         tripname = intent.getStringExtra("tripName");
+        setTitle(tripname);
         try {
             route = new JSONObject(intent.getStringExtra("route"));
         } catch (JSONException e) {
@@ -125,13 +132,17 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
         trip.pinInBackground();
 
         // Draw markers and route on the map.
-        MapHelperClass.drawMarkers(latLngs.subList(1, latLngs.size() - 1), address.subList(1, latLngs.size() - 1), mMap, BitmapDescriptorFactory.HUE_VIOLET);
+        MapHelperClass.drawMarkers(latLngs.subList(1, latLngs.size() - 1), names.subList(1, names.size()-1)
+                         ,address.subList(1, address.size() - 1), mMap, BitmapDescriptorFactory.HUE_VIOLET);
         MapHelperClass.drawRoute(route, mMap);
         mMap.addMarker(new MarkerOptions().position(latLngs.get(0))
-                .title(address.get(0))
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                .title(names.get(0))
+                .snippet(address.get(0))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)))
+                .showInfoWindow();
         mMap.addMarker(new MarkerOptions().position(latLngs.get(latLngs.size() - 1))
-                .title(address.get(latLngs.size() - 1))
+                .title(names.get(names.size()-1))
+                .snippet(address.get(address.size() - 1))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngs.get(0), 13.0f));
 
@@ -153,9 +164,6 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
                 startActivity(pictureIntent);
             }
         });
-
-        // When Finish Trip is clicked, finish the trip and upload the trip details to Parse database.
-
     }
 
     /**
@@ -196,20 +204,64 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
     private void uploadImagesToCloud() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("TripPhotoNote");
         query.fromPin(tripname);
-        query.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> parseObjects, ParseException e) {
-                if(e == null) {
-                    //Toast.makeText(StartTripActivity.this, "UPLOADING IMAGES :: "+tripname+" - FOUND :: "+parseObjects.size(), Toast.LENGTH_LONG).show();
-                    Log.d("UPLOADING IMAGES", tripname+" - FOUND :: "+parseObjects.size());
-                    for(ParseObject obj : parseObjects) {
+        List<ParseObject> parseObjects = null;
+        try {
+            parseObjects = query.find();
+
+            if(parseObjects !=null && parseObjects.size()>0) {
+                ProgressDialog progressDialog = new ProgressDialog(StartTripActivity.this);
+                progressDialog.setTitle("Saving Trip");
+                progressDialog.setMessage("Uploading images");
+                progressDialog.setCancelable(false);
+                //progressDialog.setMax(100);
+                //progressDialog.setProgress(0);
+                progressDialog.show();
+
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                options.inSampleSize = 2;
+
+                //Toast.makeText(StartTripActivity.this, "UPLOADING IMAGES :: "+tripname+" - FOUND :: "+parseObjects.size(), Toast.LENGTH_LONG).show();
+                Log.d("UPLOADING IMAGES", tripname + " - FOUND :: " + parseObjects.size());
+                byte[] data;
+                Bitmap b;
+                ByteArrayOutputStream byteStream;
+                String imageFilePath;
+                ParseFile parseImageFile;
+                String filename;
+
+                for (ParseObject obj : parseObjects) {
+                    imageFilePath = obj.getString("imageFilePath");
+                    //b = BitmapFactory.decodeFile(imageFilePath, options);
+                    b = ImageProcessingHelperClass.decodeSampledBitmapFromFile(imageFilePath, 500000);
+                    Log.d("AFTER decodeSampledBitmapFromFile", "Size of image is "+b.getByteCount());
+                    if(b != null) {
+                        byteStream = new ByteArrayOutputStream();
+                        b.compress(Bitmap.CompressFormat.JPEG, 100, byteStream);
+                        data = byteStream.toByteArray();
+
+                        int separatorIndex = imageFilePath.lastIndexOf(File.separator);
+                        filename = (separatorIndex < 0) ? imageFilePath : imageFilePath.substring(separatorIndex + 1, imageFilePath.length());
+                        filename = filename.replace("TravelDiaries", trip.getObjectId());
+                        Log.d("UPLOADING IMAGES", "parse file name : "+filename);
+                        parseImageFile = new ParseFile(filename, data);
+                        parseImageFile.save();
+                        obj.remove("imageFilePath");
+                        obj.put("photo", parseImageFile);
                         obj.put("trip", trip.getObjectId());
-                        obj.saveInBackground();
+                        obj.save();
+                        //progressDialog.incrementProgressBy(100 / parseObjects.size());
                         obj.unpinInBackground(tripname);
+                    } else {
+                        Log.d("UPLOADING IMAGES",imageFilePath +"  : bit map is null");
                     }
                 }
+                progressDialog.dismiss();
             }
-        });
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -244,6 +296,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
             });
             builder.create().show();
         }
+        // When Finish Trip is clicked, finish the trip and upload the trip details to Parse database.
         else if (id==R.id.action_finish_trip){
             AlertDialog.Builder builder = new AlertDialog.Builder(StartTripActivity.this);
             builder.setMessage("Finish trip?");
@@ -252,6 +305,8 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
                 public void onClick(DialogInterface dialog, int which) {
                     try {
                         trip.save();
+                        dialog.dismiss();
+                        Toast.makeText(StartTripActivity.this, "Please wait... uploading images", Toast.LENGTH_LONG).show();
                         uploadImagesToCloud();
                         Toast.makeText(StartTripActivity.this, "Trip saved!", Toast.LENGTH_SHORT).show();
                         trip.unpinInBackground();
@@ -277,8 +332,8 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
             Animation animation;
             if (directionsListView.getVisibility() == View.GONE) {
                 animation = AnimationUtils.loadAnimation(StartTripActivity.this, R.anim.swipe_right_to_left);
-                 //mapFragment.getView().startAnimation(animation);
-                 mapFragment.getView().setVisibility(View.GONE);
+                //mapFragment.getView().startAnimation(animation);
+                mapFragment.getView().setVisibility(View.GONE);
                 addPicture.setVisibility(View.GONE);
                 directionsListView.startAnimation(animation);
                 directionsListView.setVisibility(View.VISIBLE);
@@ -289,7 +344,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
 
                 directionsListView.startAnimation(animation);
                 directionsListView.setVisibility(View.GONE);
-                 mapFragment.getView().startAnimation(animation);
+                mapFragment.getView().startAnimation(animation);
                 addPicture.setVisibility(View.VISIBLE);
                 mapFragment.getView().setVisibility(View.VISIBLE);
                 item.setIcon(R.drawable.ic_action_navigation_menu);
@@ -363,6 +418,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
     private void setUpLocationListener() {
         ProgressDialog dialog = new ProgressDialog(StartTripActivity.this);
         dialog.setMessage("Getting Coordinates");
+        dialog.setCancelable(false);
         dialog.show();
         /********** get Gps location service LocationManager object ***********/
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

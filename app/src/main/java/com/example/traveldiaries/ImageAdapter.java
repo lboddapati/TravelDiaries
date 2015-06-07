@@ -1,8 +1,10 @@
 package com.example.traveldiaries;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -49,12 +51,16 @@ public class ImageAdapter extends BaseAdapter {
             imageView =(ImageView) convertView;
         }
 
-        Bitmap image = getResizedBitmap((Bitmap) getItem(position), 150, 150);
+        //Bitmap image = ImageProcessingHelperClass.getResizedBitmap((Bitmap) getItem(position), getImageWidth(), getImageHeight());
         imageView.setImageBitmap((Bitmap) getItem(position));
         return imageView;
     }
 
-    public static Bitmap getResizedBitmap(Bitmap inBitmap, int reqWidth, int reqHeight) {
-        return Bitmap.createScaledBitmap(inBitmap, reqWidth, reqHeight, true);
+    public int getImageWidth() {
+        return 150;
+    }
+
+    public int getImageHeight() {
+        return 150;
     }
 }

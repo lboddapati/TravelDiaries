@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +37,8 @@ import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.parse.ProgressCallback;
+import com.parse.SaveCallback;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -53,15 +56,21 @@ public class AddPhotoNoteActivity extends Activity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private ArrayList<Bitmap> photos;
     private ArrayList<String> notes;
+
     private GridView picsThumbnailView;
     private ImageView imagePreview;
     private EditText imageCaption;
+    private ImageAdapter adapter;
+
     private int selected;
     private String tripname;
     private Location currentLocation;
     private ArrayList<String> photoFilePaths;
     private int currPhotoNum;
     private String user;
+
+    private int previewwidth;
+    private int previewheight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +85,9 @@ public class AddPhotoNoteActivity extends Activity {
         photos = new ArrayList<Bitmap>();
         notes = new ArrayList<String>();
         photoFilePaths = new ArrayList<String>();
+
+        previewwidth = (int) getResources().getDimension(R.dimen.addPhotoNote_previewImageWidth);
+        previewheight = (int) getResources().getDimension(R.dimen.addPhotoNote_previewImageHeight);
 
         // Call an intent to take pictures
         launchCameraIntent();
@@ -93,7 +105,7 @@ public class AddPhotoNoteActivity extends Activity {
         imagePreview = (ImageView) findViewById(R.id.picFocused);
         imageCaption = (EditText) findViewById(R.id.caption);
         picsThumbnailView = (GridView) findViewById(R.id.picIcons);
-        ImageAdapter adapter = new ImageAdapter(this, photos);
+        adapter = new ImageAdapter(this, photos);
 
         picsThumbnailView.setAdapter(adapter);
         picsThumbnailView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -117,7 +129,12 @@ public class AddPhotoNoteActivity extends Activity {
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveImagesInLocalDataStore();
+                try {
+                    saveImagesInLocalDataStore();
+                } catch (ParseException e) {
+                    Log.d("AddPhotoNoteActivity", "Error saveing Images in Local DataStore");
+                    e.printStackTrace();
+                }
                 finish();
             }
         });
@@ -167,26 +184,15 @@ public class AddPhotoNoteActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         String currentPhotoFilePath = photoFilePaths.get(currPhotoNum);
 
-        /*if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            //TODO : Add timestamp and caption
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            photos.add(imageBitmap);
-            notes.add("");
-            ((BaseAdapter) picsThumbnailView.getAdapter()).notifyDataSetChanged();
-            selected = photos.size()-1;
-            setPreview(selected);
-        } else {
-            if(photos.size() == 0) {
-                finish();
-            }
-        }*/
-
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
 
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inSampleSize = 3;  // Experiment with different sizes
-            Bitmap b = BitmapFactory.decodeFile(currentPhotoFilePath, options);
+            //BitmapFactory.Options options = new BitmapFactory.Options();
+            //options.inSampleSize = 3;  // Experiment with different sizes
+            //Bitmap b = BitmapFactory.decodeFile(currentPhotoFilePath, options);
+
+            Bitmap b = ImageProcessingHelperClass.decodeSampledBitmapFromFile(currentPhotoFilePath
+                    //, previewwidth, previewheight);
+                    ,adapter.getImageWidth(), adapter.getImageHeight());
 
             if (b == null){
                 Log.e("BITMAP", "BITMAP NULL!!");
@@ -206,7 +212,10 @@ public class AddPhotoNoteActivity extends Activity {
     }
 
     private void setPreview(int selected) {
-        imagePreview.setImageBitmap(photos.get(selected));
+        Bitmap b = ImageProcessingHelperClass.decodeSampledBitmapFromFile(photoFilePaths.get(selected)
+                , previewwidth, previewheight);
+        //imagePreview.setImageBitmap(photos.get(selected));
+        imagePreview.setImageBitmap(b);
         imageCaption.setText(notes.get(selected));
     }
 
@@ -261,18 +270,20 @@ public class AddPhotoNoteActivity extends Activity {
      * Geotag the images and save to local datastore until they can be uploded to Parse.
      * @return Sucess or Failure.
      */
-    private void saveImagesInLocalDataStore() {
-        //Boolean success;
-
-        ParseGeoPoint geoPoint;
+    private void saveImagesInLocalDataStore() throws ParseException {
+        final ParseGeoPoint geoPoint;
         if(currentLocation != null && currentLocation.getLatitude() != 0 && currentLocation.getLongitude() != 0) {
             geoPoint = new ParseGeoPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
         } else {
             geoPoint = getLastKnownLocation();
         }
-        //geoPoint = new ParseGeoPoint(37.269382, -122.005476); //TODO: Remove this
+
+        //BitmapFactory.Options options = new BitmapFactory.Options();
+        //options.inSampleSize = 2;
+
         for (int i = 0; i < photoFilePaths.size(); i++) {
             final String fileName = photoFilePaths.get(i);
+            final String caption = notes.get(i);
 
             // Make it available in the gallery
             Intent mediaScanIntent = new Intent (Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
@@ -280,10 +291,19 @@ public class AddPhotoNoteActivity extends Activity {
             mediaScanIntent.setData(contentUri);
             sendBroadcast(mediaScanIntent);
 
-            Bitmap b = BitmapFactory.decodeFile(fileName);
+            ParseObject imageObject = new ParseObject("TripPhotoNote");
+            imageObject.put("note", caption);
+            if(geoPoint != null) {
+                imageObject.put("location", geoPoint);
+            }
+            imageObject.put("imageFilePath", fileName);
+            imageObject.pin(tripname);
+            Log.d("PINNING IMAGES", tripname + " - " + fileName + " pinned");
+
+            /*Bitmap b = BitmapFactory.decodeFile(fileName, options);
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
             if(b != null) {
-                b.compress(Bitmap.CompressFormat.JPEG, 75, byteStream);
+                b.compress(Bitmap.CompressFormat.JPEG, 100, byteStream);
 
                 byte[] data = byteStream.toByteArray();
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -291,7 +311,7 @@ public class AddPhotoNoteActivity extends Activity {
                 final ParseFile parseImageFile = new ParseFile(imageFileName, data);
                 final String caption = notes.get(i);
 
-                try {
+                /*try {
                     parseImageFile.save();
                     final ParseObject imageObject = new ParseObject("TripPhotoNote");
                     imageObject.put("photo", parseImageFile);
@@ -306,7 +326,7 @@ public class AddPhotoNoteActivity extends Activity {
                 }
             } else {
                 Log.d("ADD PHOTO NOTE ACTIVITY", "bit map is null");
-            }
+            }*/
         }
     }
 

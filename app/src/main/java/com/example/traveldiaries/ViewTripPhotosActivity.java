@@ -7,6 +7,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,6 +17,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,51 +32,62 @@ public class ViewTripPhotosActivity extends Activity {
     private int imageShowing;
     private int imageCount;
     private float x1,x2;
+    private List<ParseObject> photonotes;
+
+    private byte[] data;
+    private Bitmap bitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_photos);
 
-        final ArrayList<Bitmap> pics_icons = new ArrayList<Bitmap>();
+        ArrayList<Bitmap> pics_icons = new ArrayList<Bitmap>();
         final ArrayList<String> pic_notes = new ArrayList<String>();
         final ArrayList<String> pic_geotag_timestamp = new ArrayList<String>();
 
-        //Intent intent = getIntent();
-        //pics_icons = intent.getParcelableArrayListExtra("photos");
-        //pic_notes = intent.getStringArrayListExtra("notes");
-        //pic_geotag_timestamp = intent.getStringArrayListExtra("geotag_timestamp");
         String pin = getIntent().getStringExtra("pin");
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 2;
+        ImageAdapter adapter = new ImageAdapter(ViewTripPhotosActivity.this, pics_icons);
+
+        //BitmapFactory.Options options = new BitmapFactory.Options();
+        //options.inSampleSize = 4;
+
+        final DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("TripPhotoNote");
         query.fromPin(pin);
-        List<ParseObject> photonotes = null;
         try {
+            String note;
+            String geotagTimeStamp;
             photonotes = query.find();
             setTitle(photonotes.size() + " Photos");
             for(ParseObject photonote : photonotes) {
-                byte[] data = photonote.getParseFile("photo").getData();
-                Bitmap photo = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-                String note = photonote.getString("note");
-                String geotagTimeStamp = photonote.getCreatedAt().toString();
+                data = photonote.getParseFile("photo").getData();
+                bitmap = ImageProcessingHelperClass.decodeSampledBitmapFromByteArry(data
+                        , adapter.getImageWidth(), adapter.getImageHeight());
+                note = photonote.getString("note");
+                geotagTimeStamp = photonote.getCreatedAt().toString();
                 if (photonote.getString("geotag") != null) {
                     geotagTimeStamp = photonote.getString("geotag") +" (" + geotagTimeStamp + ")";
                 }
-                pics_icons.add(photo);
+                pics_icons.add(bitmap);
                 pic_notes.add(note);
                 pic_geotag_timestamp.add(geotagTimeStamp);
             }
         } catch (ParseException e) {
             e.printStackTrace();
+        } finally {
+            data = null;
+            bitmap = null;
         }
 
         imageCount = pics_icons.size();
 
         GridView gridview = (GridView) findViewById(R.id.gridview);
-        gridview.setAdapter(new ImageAdapter(this, pics_icons));
+        gridview.setAdapter(adapter);
+        pics_icons = null;
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 imageShowing = position;
@@ -84,13 +98,49 @@ public class ViewTripPhotosActivity extends Activity {
                 image_dialog.setContentView(dialogView);
 
                 final ImageView picture= (ImageView) image_dialog.findViewById(R.id.picture);
-                picture.setImageBitmap(pics_icons.get(imageShowing));
+                try {
+                    data = photonotes.get(position).getParseFile("photo").getData();
+                    bitmap = ImageProcessingHelperClass.decodeSampledBitmapFromByteArry(data
+                                                   , metrics.widthPixels, metrics.heightPixels);
+                    picture.setImageBitmap(bitmap);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                } finally {
+                    data = null;
+                    bitmap = null;
+                }
+                //picture.setImageBitmap(pics_icons.get(imageShowing));
 
                 final TextView caption=(TextView) image_dialog.findViewById(R.id.caption);
                 caption.setText(pic_notes.get(imageShowing));
 
                 final TextView geotag_timestamp=(TextView) image_dialog.findViewById(R.id.geotag_timestamp);
                 geotag_timestamp.setText(pic_geotag_timestamp.get(imageShowing));
+
+                final Animation.AnimationListener animationListener = new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                        try {
+                            data = photonotes.get(imageShowing).getParseFile("photo").getData();
+                            bitmap = ImageProcessingHelperClass.decodeSampledBitmapFromByteArry(data
+                                    , metrics.widthPixels, metrics.heightPixels);
+                            picture.setImageBitmap(bitmap);
+                            caption.setText(pic_notes.get(imageShowing));
+                            geotag_timestamp.setText(pic_geotag_timestamp.get(imageShowing));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        } finally {
+                            data = null;
+                            bitmap = null;
+                        }
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) { }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) { }
+                };
 
                 picture.setOnTouchListener(new View.OnTouchListener() {
                     @Override
@@ -107,22 +157,7 @@ public class ViewTripPhotosActivity extends Activity {
 
                                         Animation animation = AnimationUtils.loadAnimation(ViewTripPhotosActivity.this
                                                 , R.anim.swipe_left_to_right);
-                                        animation.setAnimationListener(new Animation.AnimationListener() {
-                                            @Override
-                                            public void onAnimationStart(Animation animation) {
-                                            }
-
-                                            @Override
-                                            public void onAnimationEnd(Animation animation) {
-                                                picture.setImageBitmap(pics_icons.get(imageShowing));
-                                                caption.setText(pic_notes.get(imageShowing));
-                                                geotag_timestamp.setText(pic_geotag_timestamp.get(imageShowing));
-                                            }
-
-                                            @Override
-                                            public void onAnimationRepeat(Animation animation) {
-                                            }
-                                        });
+                                        animation.setAnimationListener(animationListener);
                                         dialogView.startAnimation(animation);
                                     }
                                 } else if(x2 < x1) {  //Right to Left sweep
@@ -131,22 +166,7 @@ public class ViewTripPhotosActivity extends Activity {
 
                                         Animation animation = AnimationUtils.loadAnimation(ViewTripPhotosActivity.this
                                                 , R.anim.swipe_right_to_left);
-                                        animation.setAnimationListener(new Animation.AnimationListener() {
-                                            @Override
-                                            public void onAnimationStart(Animation animation) {
-                                            }
-
-                                            @Override
-                                            public void onAnimationEnd(Animation animation) {
-                                                picture.setImageBitmap(pics_icons.get(imageShowing));
-                                                caption.setText(pic_notes.get(imageShowing));
-                                                geotag_timestamp.setText(pic_geotag_timestamp.get(imageShowing));
-                                            }
-
-                                            @Override
-                                            public void onAnimationRepeat(Animation animation) {
-                                            }
-                                        });
+                                        animation.setAnimationListener(animationListener);
                                         dialogView.startAnimation(animation);
                                     }
                                 }
@@ -160,8 +180,6 @@ public class ViewTripPhotosActivity extends Activity {
                 image_dialog.show();
             }
         });
-
-
 
     }
 }

@@ -11,6 +11,7 @@
     <dimen name="elevation_low">5dp</dimen>
     <dimen name="elevation_med">10dp</dimen>
     <dimen name="elevation_high">15dp</dimen>
-
+    <dimen name="addPhotoNote_previewImageWidth">280dp</dimen>
+    <dimen name="addPhotoNote_previewImageHeight">280dp</dimen>
 
 </resources>

@@ -2,8 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" android:gravity="center"
-    tools:context="com.example.traveldiaries.prelogin"
-    android:background="@drawable/startup_background">
+    tools:context="com.example.traveldiaries.prelogin">
 
 
     <!--<ImageView
@@ -35,39 +34,36 @@
         android:id="@+id/heading"
         android:background="@color/White"/>
 
-    <!--android:layout_alignParentStart="true"
-    android:layout_alignParentTop="true"
-    android:layout_alignParentBottom="true"
-     />-->
-<TextView
-    android:layout_width="270dp"
-    android:layout_height="wrap_content"
-    android:text="Travel . Discover . Capture . Relive"
-    android:paddingLeft="10dp"
-    android:paddingRight="10dp"
-    android:paddingTop="10dp"
-    android:paddingBottom="15dp"
-    android:layout_centerHorizontal="true"
-    android:textSize="15sp"
-    android:gravity="center"
-    android:elevation="24dp"
-    android:textColor="#006699"
-    android:layout_below="@+id/heading"
-    android:background="@color/White"
-    android:id="@+id/caption"
-    />
-<Button
-    android:layout_width="270dp"
-    android:layout_height="wrap_content"
-    android:text="Get Started"
-    style="?android:attr/buttonBarButtonStyle"
-    android:id="@+id/button"
-    android:textSize="20sp"
-    android:elevation="24dp"
-    android:textColor="#ff0000"
-    android:background="#ffffff"
-    android:gravity="center"
-    android:layout_below="@+id/caption"
-    android:layout_centerHorizontal="true"
-    />
+    <TextView
+        android:layout_width="270dp"
+        android:layout_height="wrap_content"
+        android:text="Travel . Discover . Capture . Relive"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:elevation="24dp"
+        android:textColor="#006699"
+        android:layout_below="@+id/heading"
+        android:background="@color/White"
+        android:id="@+id/caption"
+        />
+    <Button
+        android:layout_width="270dp"
+        android:layout_height="wrap_content"
+        android:text="Get Started"
+        style="?android:attr/buttonBarButtonStyle"
+        android:id="@+id/button"
+        android:textSize="20sp"
+        android:elevation="24dp"
+        android:textColor="#ff0000"
+        android:background="#ffffff"
+        android:gravity="center"
+        android:layout_below="@+id/caption"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        />
 </RelativeLayout>

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -208,8 +209,14 @@ public class ViewTripActivity extends FragmentActivity {
                 photonote.put("geotag", "At " + names.get(closestPlace));
                 photonote.pin(names.get(closestPlace));
 
+                Log.d("MATCH PHOTOS TO PLACES", "closest place is " + names.get(closestPlace));
+
                 int count = photoCount.get(closestPlace) + 1;
-                photoCount.add(closestPlace, count);
+                photoCount.set(closestPlace, count);
+
+                for(int i=0; i<names.size(); i++) {
+                    Log.d("MATCH PHOTOS TO PLACES", photoCount.get(i) + "photos at " + names.get(i));
+                }
             }
             photonote.pin(tripname);
         }
