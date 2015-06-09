@@ -1,8 +1,5 @@
 package com.example.traveldiaries;
 
-/**
- * Created by Tonia on 5/14/15.
- */
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,6 +8,9 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+/*this is a helper class that parses the JSON results from API's
+* and returns the result to other activities*/
 
 public class PlaceJSONParser {
 

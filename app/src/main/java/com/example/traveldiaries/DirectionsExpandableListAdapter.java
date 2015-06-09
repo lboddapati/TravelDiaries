@@ -17,19 +17,16 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * Created by lasyaboddapati on 5/10/15.
- */
+/* class to show the detailed directions  */
 public class DirectionsExpandableListAdapter extends BaseExpandableListAdapter {
     private Context context;
-    //private JSONObject route;
     private JSONArray legs;
     private ArrayList<String> placesNames;
 
+    //get the route once places rae selected
     public DirectionsExpandableListAdapter(Context context, JSONObject route, ArrayList<String> placesNames) {
         this.context = context;
         this.placesNames = placesNames;
-        //this.route = route;
         try {
             this.legs = route.getJSONArray("legs");
         } catch (JSONException e) {
@@ -90,6 +87,7 @@ public class DirectionsExpandableListAdapter extends BaseExpandableListAdapter {
         return true;
     }
 
+    //adds the directions to a collapsible list
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         JSONObject header = (JSONObject) getGroup(groupPosition);
@@ -102,15 +100,11 @@ public class DirectionsExpandableListAdapter extends BaseExpandableListAdapter {
         TextView legHeader = (TextView) convertView.findViewById(R.id.legHeader);
         TextView  legDetails = (TextView) convertView.findViewById(R.id.legDetails);
         try {
-            //String startAddr = header.getString("start_address");
-            //String endAddr = header.getString("end_address");
+
             String dist = header.getJSONObject("distance").getString("text");
             String duration = header.getJSONObject("duration").getString("text");
-            //String arrivalTime = "ETA: "+header.getJSONObject("arrival_time").getString("text");
-            //Log.d("HEADER", "AAAAAAAAAAAAAAAAAAA"+ startAddr+" -> "+endAddr);
-            //legHeader.setText(startAddr+" -> "+endAddr);
             legHeader.setText(placesNames.get(groupPosition)+" -> "+placesNames.get(groupPosition+1));
-            legDetails.setText(dist+", "+duration); //+", "+arrivalTime);
+            legDetails.setText(dist+", "+duration);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -145,7 +139,6 @@ public class DirectionsExpandableListAdapter extends BaseExpandableListAdapter {
 
     private String cleanInstructions(String htmlInstructions) {
         Spanned html = Html.fromHtml(htmlInstructions);
-        //Log.d("CLEAN INSTRUCTIONS", html.toString());
         return html.toString();
     }
 }

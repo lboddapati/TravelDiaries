@@ -94,9 +94,6 @@ public class AddPhotoNoteActivity extends Activity {
 
         setContentView(R.layout.activity_add_photo_note);
 
-        //final int STATUS_BAR_COLOR = getResources().getColor(R.color.DarkerTurquoise);
-        //getWindow().setStatusBarColor(STATUS_BAR_COLOR);
-
         // UI Elements
         TextView cancel = (TextView) findViewById(R.id.cancel);
         TextView done = (TextView) findViewById(R.id.done);
@@ -116,7 +113,7 @@ public class AddPhotoNoteActivity extends Activity {
             }
         });
 
-        // Cancel and dont add any pictures.
+        // Cancel and don't add any pictures.
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -186,12 +183,7 @@ public class AddPhotoNoteActivity extends Activity {
 
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
 
-            //BitmapFactory.Options options = new BitmapFactory.Options();
-            //options.inSampleSize = 3;  // Experiment with different sizes
-            //Bitmap b = BitmapFactory.decodeFile(currentPhotoFilePath, options);
-
             Bitmap b = ImageProcessingHelperClass.decodeSampledBitmapFromFile(currentPhotoFilePath
-                    //, previewwidth, previewheight);
                     ,adapter.getImageWidth(), adapter.getImageHeight());
 
             if (b == null){
@@ -204,7 +196,8 @@ public class AddPhotoNoteActivity extends Activity {
             setPreview(selected);
         }
         else {
-            deleteTempFile(currentPhotoFilePath);  // Delete temp file if photo not taken
+            // Delete temp file if photo not taken
+            deleteTempFile(currentPhotoFilePath);
             if(photos.size() == 0) {
                 finish();
             }
@@ -214,7 +207,7 @@ public class AddPhotoNoteActivity extends Activity {
     private void setPreview(int selected) {
         Bitmap b = ImageProcessingHelperClass.decodeSampledBitmapFromFile(photoFilePaths.get(selected)
                 , previewwidth, previewheight);
-        //imagePreview.setImageBitmap(photos.get(selected));
+
         imagePreview.setImageBitmap(b);
         imageCaption.setText(notes.get(selected));
     }
@@ -278,9 +271,6 @@ public class AddPhotoNoteActivity extends Activity {
             geoPoint = getLastKnownLocation();
         }
 
-        //BitmapFactory.Options options = new BitmapFactory.Options();
-        //options.inSampleSize = 2;
-
         for (int i = 0; i < photoFilePaths.size(); i++) {
             final String fileName = photoFilePaths.get(i);
             final String caption = notes.get(i);
@@ -299,34 +289,6 @@ public class AddPhotoNoteActivity extends Activity {
             imageObject.put("imageFilePath", fileName);
             imageObject.pin(tripname);
             Log.d("PINNING IMAGES", tripname + " - " + fileName + " pinned");
-
-            /*Bitmap b = BitmapFactory.decodeFile(fileName, options);
-            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-            if(b != null) {
-                b.compress(Bitmap.CompressFormat.JPEG, 100, byteStream);
-
-                byte[] data = byteStream.toByteArray();
-                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                final String imageFileName = user+"_image_" + timeStamp + "_" + i + ".jpeg";
-                final ParseFile parseImageFile = new ParseFile(imageFileName, data);
-                final String caption = notes.get(i);
-
-                /*try {
-                    parseImageFile.save();
-                    final ParseObject imageObject = new ParseObject("TripPhotoNote");
-                    imageObject.put("photo", parseImageFile);
-                    imageObject.put("note", caption);
-                    if(geoPoint != null) {
-                        imageObject.put("location", geoPoint);
-                    }
-                    imageObject.pin(tripname);
-                    Log.d("PINNING IMAGES", tripname + " - " + imageFileName + " pinned");
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                Log.d("ADD PHOTO NOTE ACTIVITY", "bit map is null");
-            }*/
         }
     }
 

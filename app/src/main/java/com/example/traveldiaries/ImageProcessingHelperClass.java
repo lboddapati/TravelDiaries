@@ -10,7 +10,7 @@ import android.widget.Toast;
 import java.io.File;
 
 /**
- * Created by lasyaboddapati on 6/6/15.
+ * to improve the resolution of photos
  */
 public class ImageProcessingHelperClass {
 
@@ -119,10 +119,6 @@ public class ImageProcessingHelperClass {
         long actualByteSize = (new File(filepath)).length();
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
-        //options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        //options.inJustDecodeBounds = true;
-        //BitmapFactory.decodeFile(filepath, options);
-
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(actualByteSize, reqByteSize);
         Log.d("decodeSampledBitmapFromFile", "insample size is " + options.inSampleSize);

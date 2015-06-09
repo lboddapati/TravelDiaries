@@ -1,9 +1,5 @@
 package com.example.traveldiaries;
 
-/**
- * Created by Tonia on 5/16/15.
- */
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -17,21 +13,15 @@ import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
-import android.text.InputType;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -40,12 +30,10 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.AutoCompleteTextView;
 import android.content.Intent;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
@@ -76,12 +64,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class getPlacesActivity extends FragmentActivity {
+/*  this activity helps build a trip
+*   it displays all the data fetched from API's
+*   */
+
+   public class getPlacesActivity extends FragmentActivity {
     private GoogleMap mGoogleMap;
     private String YOUR_API_KEY;
 
-    private AutoCompleteTextView atvPlaces_start;
-    private AutoCompleteTextView atvPlaces_end;
+    private AutoCompleteTextView atvPlaces_start;//origin
+    private AutoCompleteTextView atvPlaces_end; //destination
     private AutocompletePlacesTask placesTask;
     private AutocompleteTask autoCompleteTask;
     private ImageButton btnStartTrip;
@@ -119,7 +111,7 @@ public class getPlacesActivity extends FragmentActivity {
 
     ProgressDialog progressDialog;
 
-
+    //gets the place types selected
     View.OnClickListener categoriesClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -201,9 +193,6 @@ public class getPlacesActivity extends FragmentActivity {
             progressDialog.setTitle("Please wait...");
             progressDialog.setMessage("Fetching results");
 
-            //final int STATUS_BAR_COLOR = getResources().getColor(R.color.Blue);
-            //getWindow().setStatusBarColor(STATUS_BAR_COLOR);
-
             YOUR_API_KEY = getResources().getString(R.string.google_places_key);
             Log.d("API_KEY", YOUR_API_KEY);
 
@@ -238,19 +227,17 @@ public class getPlacesActivity extends FragmentActivity {
 
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    // TODO Auto-generated method stub
+
                 }
 
                 @Override
                 public void afterTextChanged(Editable s) {
                     if (atvPlaces_start.getText().toString().isEmpty()) {
-                        //btnFind.setEnabled(false);
-                        //categories.setVisibility(View.GONE);
                         setVisibility(categories, View.GONE);
                         btnStartTrip.setVisibility(View.GONE);
                         clearPlaces();
                         clearAllSelections();
-                    } else {
+                    } else { //checks if both origin and destination are same
                         if (atvPlaces_start.getText().toString() == atvPlaces_end.getText().toString()) {
                             Toast toast = Toast.makeText(getBaseContext(), "Both origin and destination are same. Please change your selection!", Toast.LENGTH_SHORT);
                             toast.show();
@@ -267,11 +254,9 @@ public class getPlacesActivity extends FragmentActivity {
 
                     HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                     System.out.println(hm.get("place_id") + "Place");
-                    //FunctionLatLong(hm.get("place_id"));
+                    FunctionLatLong(hm.get("place_id"));
 
                     if (atvPlaces_end.getText().toString().isEmpty()) {
-                        //btnFind.setEnabled(false);
-                        //categories.setVisibility(View.GONE);
                         setVisibility(categories, View.GONE);
                         btnStartTrip.setVisibility(View.GONE);
                         clearPlaces();
@@ -282,9 +267,6 @@ public class getPlacesActivity extends FragmentActivity {
                             toast.show();
                         }
                         else {
-                            FunctionLatLong(hm.get("place_id"));
-                            //btnFind.setEnabled(true);
-                            //categories.setVisibility(View.VISIBLE);
                             setVisibility(categories, View.VISIBLE);
                             getPlaces();
                         }
@@ -296,20 +278,19 @@ public class getPlacesActivity extends FragmentActivity {
             atvPlaces_end.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    //get al the suggested places from Autocomplete task
                     placesTask = new AutocompletePlacesTask();
                     placesTask.execute(s.toString());
                 }
 
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    // TODO Auto-generated method stub
+
                 }
 
                 @Override
                 public void afterTextChanged(Editable s) {
                     if (atvPlaces_end.getText().toString().isEmpty()) {
-                        //btnFind.setEnabled(false);
-                        //categories.setVisibility(View.GONE);
                         setVisibility(categories, View.GONE);
                         btnStartTrip.setVisibility(View.GONE);
                         clearPlaces();
@@ -327,25 +308,20 @@ public class getPlacesActivity extends FragmentActivity {
 
                     HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
                     System.out.println(hm.get("place_id") + "Place");
-                    //FunctionLatLong_end(hm.get("place_id"));
+                    FunctionLatLong_end(hm.get("place_id"));
+
                     if (atvPlaces_start.getText().toString().isEmpty()) {
-                        //btnFind.setEnabled(false);
-                        //categories.setVisibility(View.GONE);
+
                         setVisibility(categories, View.GONE);
                         btnStartTrip.setVisibility(View.GONE);
                         clearPlaces();
                         clearAllSelections();
                     } else {
-                        //Toast.makeText(getPlacesActivity.this,"Destination",Toast.LENGTH_SHORT).show();
                         if (atvPlaces_end.getText().toString().equalsIgnoreCase(atvPlaces_start.getText().toString())) {
                             Toast toast = Toast.makeText(getPlacesActivity.this, "Both origin and destination are same. Please change your selection!", Toast.LENGTH_SHORT);
                             toast.show();
                         }
                         else {
-                            FunctionLatLong_end(hm.get("place_id"));
-
-                            //btnFind.setEnabled(true);
-                            //categories.setVisibility(View.VISIBLE);
                             setVisibility(categories, View.VISIBLE);
                             getPlaces();
                         }
@@ -357,7 +333,6 @@ public class getPlacesActivity extends FragmentActivity {
             adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listItems);
             listView.setAdapter(adapter);
 
-            // set up the map
             setUpMapIfNeeded();
 
             btnStartTrip.setOnClickListener(new View.OnClickListener() {
@@ -365,9 +340,7 @@ public class getPlacesActivity extends FragmentActivity {
                 @Override
                 public void onClick(View v) {
 
-
                     View view = View.inflate(getPlacesActivity.this, R.layout.dialogbox, null);
-
                     final AlertDialog.Builder dialogBox = new AlertDialog.Builder(getPlacesActivity.this);
                     dialogBox.setTitle("Trip Name");
                     dialogBox.setView(view);
@@ -376,7 +349,7 @@ public class getPlacesActivity extends FragmentActivity {
                     dialogBox.setPositiveButton("Start Trip", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int id) {
-                            String tripName = input.getText().toString();
+                            String tripName = input.getText().toString(); //add trip name
 
                             if ((tripName.isEmpty()) || (tripName.matches("^\\s*$"))) {
                                 input.setError("Trip Name cannot be empty. Please enter some text");
@@ -470,20 +443,19 @@ public class getPlacesActivity extends FragmentActivity {
 
     private void getPlaces() {
         clearPlaces();
-
+        //gets the latitude and logitude of selected origin, destination
         setParameters(mLatitude_start, mLongitude_start, mLatitude_end, mLongitude_end);
-
+        //add to google maps
         mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(places.get(0), 11.0f));
-        // Differentiate start and end location markers with different colors. Start = Green, End = Red.
         mGoogleMap.addMarker(new MarkerOptions().position(places.get(0))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
         mGoogleMap.addMarker(new MarkerOptions().position(places.get(1))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
+        //get route from Map helper class
         routesJSON = MapHelperClass.getRoute(places);
         if(routesJSON == null) {
             btnStartTrip.setVisibility(View.GONE);
-            //Toast.makeText(this, "No route found", Toast.LENGTH_LONG).show();
         } else {
             progressDialog.show();
             btnStartTrip.setVisibility(View.VISIBLE);
@@ -510,8 +482,6 @@ public class getPlacesActivity extends FragmentActivity {
             type.append("restaurant%7Ccafe%7C");
         if (bars)
             type.append("bar%7C");
-        //if (tourist)
-        //    type.append("zoo%7Cmuseum%7Cpark%7Cplace_of_worship%7C");
         if (nightLife)
             type.append("night_club%7Ccasino%7C");
         if(fuel)
@@ -523,6 +493,7 @@ public class getPlacesActivity extends FragmentActivity {
         if (popular)
             keyword.append("popular%7Clocal+attractions%7C");
 
+        //API URL to get the selected types of places in that route
         StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
         url.append("radius=3000");
         url.append("&sensor=true");
@@ -540,24 +511,19 @@ public class getPlacesActivity extends FragmentActivity {
             StringBuilder sb = new StringBuilder(url);
             sb.append("&location=" + src.latitude + "," + src.longitude);
 
-            // Creating a new non-ui thread task to download json data
             PlacesTask placesTask = new PlacesTask();
 
-            // Invokes the "doInBackground()" method of the class PlaceTask
             placesTask.execute(sb.toString());
             i+=size;
 
         }
-        // to get the last point if skipped.
         if((i-size)<points.size()-1 ){
             LatLng src = points.get(points.size()-1);
             StringBuilder sb = new StringBuilder(url);
             sb.append("&location=" + src.latitude + "," + src.longitude);
 
-            // Creating a new non-ui thread task to download json data
             PlacesTask placesTask = new PlacesTask();
 
-            // Invokes the "doInBackground()" method of the class PlaceTask
             placesTask.execute(sb.toString());
 
         }
@@ -568,7 +534,6 @@ public class getPlacesActivity extends FragmentActivity {
 
         places.add(new LatLng(lat_start, long_start));
         if((atvPlaces_start.getText().toString().equalsIgnoreCase("Your Location")) && (currentLocation_address != null)) {
-            //Toast.makeText(this, currentLocation_address.toString(), Toast.LENGTH_LONG).show();
             selectedPlacesNames.add(currentLocation_address.getLocality());
             selectedPlacesAddress.add(currentLocation_address.getAddressLine(0));
         } else {
@@ -593,7 +558,6 @@ public class getPlacesActivity extends FragmentActivity {
 
         getLatLongTask latLongTask = new getLatLongTask();
 
-        // Invokes the "doInBackground()" method of the class PlaceTask
         latLongTask.execute(sb.toString());
 
     }
@@ -734,7 +698,6 @@ public class getPlacesActivity extends FragmentActivity {
         }
     }
 
-
     /**
      * A method to download json data from url
      */
@@ -745,7 +708,6 @@ public class getPlacesActivity extends FragmentActivity {
         try {
             URL url = new URL(strUrl);
             Log.d("In downloadUrl", url.toString());
-
 
             // Creating an http connection to communicate with url
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -764,9 +726,7 @@ public class getPlacesActivity extends FragmentActivity {
             while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
-
             data = sb.toString();
-
             br.close();
 
         } catch (Exception e) {
@@ -914,23 +874,18 @@ public class getPlacesActivity extends FragmentActivity {
      */
     private class ParserTask extends AsyncTask<String, Integer, List<HashMap<String, String>>> {
 
-        /*View view = View.inflate(getPlacesActivity.this, R.layout.activity_get_places, null);
-        ProgressBar spinner = new ProgressBar(getPlacesActivity.this);
-        ProgressBar spinner = (ProgressBar)findViewById(R.id.progressBar);*/
         JSONObject jObject;
 
         // Invoked by execute() method of this object
         @Override
         protected List<HashMap<String, String>> doInBackground(String... jsonData) {
 
-            //spinner.setVisibility(view.VISIBLE);
             List<HashMap<String, String>> places = null;
             PlaceJSONParser placeJsonParser = new PlaceJSONParser();
 
             try {
                 jObject = new JSONObject(jsonData[0]);
                 System.out.println("Inside parse task");
-                /** Getting the parsed data as a List construct */
                 places = placeJsonParser.parse(jObject);
 
             } catch (Exception e) {
@@ -942,7 +897,6 @@ public class getPlacesActivity extends FragmentActivity {
 
         // Executed after the complete execution of doInBackground() method
         protected void onPostExecute(List<HashMap<String, String>> list) {
-            //spinner.setVisibility(view.GONE);
 
             if (list != null) {
 
@@ -1072,7 +1026,6 @@ public class getPlacesActivity extends FragmentActivity {
         protected void onPostExecute(Address result)
         {
             this.dialog.cancel();
-            //Toast.makeText(getPlacesActivity.this, "Your Locality is: " + result, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -1159,7 +1112,6 @@ public class getPlacesActivity extends FragmentActivity {
         Criteria criteria = new Criteria();
 
         // Getting the name of the best provider
-        //String provider = locationManager.getBestProvider(criteria, true);
         String provider = null;
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             provider = LocationManager.GPS_PROVIDER;

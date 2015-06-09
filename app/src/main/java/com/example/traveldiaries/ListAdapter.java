@@ -13,7 +13,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 /**
- * Created by Spandana on 5/22/15.
+ * displays a list of photos and no.of photos
+ * taken in a trip at each place
  */
 public class ListAdapter extends BaseAdapter {
 

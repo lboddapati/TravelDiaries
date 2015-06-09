@@ -13,9 +13,8 @@ import android.widget.ImageView;
 
 import java.util.ArrayList;
 
-/**
- * Created by lasyaboddapati on 5/13/15.
- */
+/* displays all the pictures taken in that trip */
+
 public class ImageAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<Bitmap> thumbnails;
@@ -39,7 +38,7 @@ public class ImageAdapter extends BaseAdapter {
     public long getItemId(int position) {
         return position;
     }
-
+    // gets the position to display an image in a row
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ImageView imageView;
@@ -50,8 +49,6 @@ public class ImageAdapter extends BaseAdapter {
         } else {
             imageView =(ImageView) convertView;
         }
-
-        //Bitmap image = ImageProcessingHelperClass.getResizedBitmap((Bitmap) getItem(position), getImageWidth(), getImageHeight());
         imageView.setImageBitmap((Bitmap) getItem(position));
         return imageView;
     }

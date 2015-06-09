@@ -26,10 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by lasyaboddapati on 5/28/15.
- */
-
-/**
  * Helper Class for performing Map related functions like:
  * - Get optimal route.
  * - Draw the route on map.

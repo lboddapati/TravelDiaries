@@ -1,23 +1,17 @@
 package com.example.traveldiaries;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.v7.internal.app.ToolbarActionBar;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
@@ -87,9 +81,6 @@ public class PreviousTrip extends Activity {
                 // Else display taken trips
                 else {
                     noTrips = false;
-                    //BitmapFactory.Options options = new BitmapFactory.Options();
-                    //options.inSampleSize = 2;  //TODO: set optimal size;
-
                     PicAdapter adapter = new PicAdapter(this, trip_names, trip_icons);
                     gridview.setAdapter(adapter);
 
@@ -110,7 +101,6 @@ public class PreviousTrip extends Activity {
                                 byte[] data = photoNote.getParseFile("photo").getData();
                                 icon = ImageProcessingHelperClass.decodeSampledBitmapFromByteArry(data
                                             , adapter.getImageWidth(), adapter.getImageHeight());
-                                //icon = BitmapFactory.decodeByteArray(data, 0, data.length, options);
                             }
                         } catch (ParseException e) {
                             Log.d("PHOTOS", "Error:: fetching photos!!");
@@ -118,7 +108,6 @@ public class PreviousTrip extends Activity {
                         } finally {
                             // If no photos are available for the trip, use the default icon.
                             if (icon == null) {
-                                //icon = BitmapFactory.decodeResource(getResources(), R.drawable.defaulticon, options);
                                 icon = ImageProcessingHelperClass.decodeSampledBitmapFromResource(getResources()
                                     , R.drawable.defaulticon, adapter.getImageWidth(), adapter.getImageHeight());
                             }
@@ -164,7 +153,6 @@ public class PreviousTrip extends Activity {
                 popupMessage.setText("No Trips taken yet.\nStart a new trip today!");
                 popupMessage.setGravity(Gravity.CENTER);
                 popupMessage.setPadding(30, 30, 30, 30);
-                //popupMessage.setElevation(30);
                 popupMessage.setBackgroundColor(getResources().getColor(R.color.Red));
                 popupMessage.setTextColor(Color.WHITE);
                 PopupWindow popupWindow = new PopupWindow(popupMessage, LinearLayout.LayoutParams.WRAP_CONTENT
@@ -187,7 +175,6 @@ public class PreviousTrip extends Activity {
             if (id == R.id.action_new_trip) {
                 Intent buildNewTrip = new Intent(PreviousTrip.this, getPlacesActivity.class);
                 startActivity(buildNewTrip);
-                //finish();
             }
             // If 'Logout Out' option is selected, log out the user and redirect back to startup screen.
             else if (id == R.id.action_sign_out) {

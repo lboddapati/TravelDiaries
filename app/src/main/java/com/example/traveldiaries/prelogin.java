@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import android.widget.AdapterView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+/*
+* The main page of travel Diaries before login
+* */
 
 public class prelogin extends Activity {
 

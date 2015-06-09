@@ -6,7 +6,10 @@ import android.widget.AutoCompleteTextView;
 
 import java.util.HashMap;
 
-public class CustomAutoCompleteTextView extends AutoCompleteTextView {
+/* class to customize the autocomplete Edit view
+*  of Origin and Destination */
+
+  public class CustomAutoCompleteTextView extends AutoCompleteTextView {
 
     public CustomAutoCompleteTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -21,8 +24,5 @@ public class CustomAutoCompleteTextView extends AutoCompleteTextView {
 
         return hm.get("description");
 
-
     }
-
-
 }

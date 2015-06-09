@@ -160,7 +160,6 @@ public class ViewTripActivity extends FragmentActivity {
                 BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_action_camera);
                 mMap.addMarker(new MarkerOptions().position(marker.getPosition()).icon(icon).flat(true));
             }
-            //marker.showInfoWindow();
         }
 
         marker = mMap.addMarker(new MarkerOptions().position(latLngs.get(numOfPlaces - 1))
@@ -171,8 +170,6 @@ public class ViewTripActivity extends FragmentActivity {
             BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_action_camera);
             mMap.addMarker(new MarkerOptions().position(marker.getPosition()).icon(icon).flat(true));
         }
-        //marker.showInfoWindow();
-
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngs.get(0), 11.0f));
         MapHelperClass.drawRoute(route, mMap);
     }
@@ -283,7 +280,6 @@ public class ViewTripActivity extends FragmentActivity {
             Animation animation;
             if (listView.getVisibility() == View.GONE) {
                 animation = AnimationUtils.loadAnimation(ViewTripActivity.this, R.anim.swipe_right_to_left);
-                //mapFragment.getView().startAnimation(animation);
                 mapFragment.getView().setVisibility(View.GONE);
                 if (photoNotes.size() != 0) {
                     textView.startAnimation(animation);

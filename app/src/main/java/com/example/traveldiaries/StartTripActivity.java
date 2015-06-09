@@ -83,18 +83,7 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
             StrictMode.setThreadPolicy(policy);
         }
 
-        /*if(!isNetworkAvailable()) {
-            setContentView(R.layout.no_network_error);
-            Button refreshButton = (Button) findViewById(R.id.refresh);
-            refreshButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    StartTripActivity.this.recreate();
-                }
-            });
-
-        } else {*/
-
+        //get the Google Map
         setUpMapIfNeeded();
         setUpLocationListener();
 
@@ -113,14 +102,10 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
             e.printStackTrace();
         }
 
-        //System.out.println("IN MAP TRIP ACTIVITY :: "+latLngs.size()+"::"+names.size()+"::"+address.size());
-
         // Create a 'Trip' parse object and pin it for saving later.
         trip = new ParseObject("Trip");
         trip.put("user", user);
         trip.put("tripName", tripname);
-        //JSONObject route = MapHelperClass.getRoute(latLngs);
-
         trip.put("route", route);
         try {
             JSONArray waypointOrder = route.getJSONArray("waypoint_order");
@@ -213,15 +198,12 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
                 progressDialog.setTitle("Saving Trip");
                 progressDialog.setMessage("Uploading images");
                 progressDialog.setCancelable(false);
-                //progressDialog.setMax(100);
-                //progressDialog.setProgress(0);
                 progressDialog.show();
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                 options.inSampleSize = 2;
 
-                //Toast.makeText(StartTripActivity.this, "UPLOADING IMAGES :: "+tripname+" - FOUND :: "+parseObjects.size(), Toast.LENGTH_LONG).show();
                 Log.d("UPLOADING IMAGES", tripname + " - FOUND :: " + parseObjects.size());
                 byte[] data;
                 Bitmap b;
@@ -232,7 +214,6 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
 
                 for (ParseObject obj : parseObjects) {
                     imageFilePath = obj.getString("imageFilePath");
-                    //b = BitmapFactory.decodeFile(imageFilePath, options);
                     b = ImageProcessingHelperClass.decodeSampledBitmapFromFile(imageFilePath, 500000);
                     Log.d("AFTER decodeSampledBitmapFromFile", "Size of image is "+b.getByteCount());
                     if(b != null) {
@@ -283,8 +264,6 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
                 public void onClick(DialogInterface dialog, int which) {
                     trip.unpinInBackground();
                     ParseObject.unpinAllInBackground(tripname);
-                    //Intent prevTrips = new Intent(StartTripActivity.this, PreviousTrip.class);
-                    //startActivity(prevTrips);
                     finish();
                 }
             });
@@ -332,7 +311,6 @@ public class StartTripActivity extends FragmentActivity implements LocationListe
             Animation animation;
             if (directionsListView.getVisibility() == View.GONE) {
                 animation = AnimationUtils.loadAnimation(StartTripActivity.this, R.anim.swipe_right_to_left);
-                //mapFragment.getView().startAnimation(animation);
                 mapFragment.getView().setVisibility(View.GONE);
                 addPicture.setVisibility(View.GONE);
                 directionsListView.startAnimation(animation);

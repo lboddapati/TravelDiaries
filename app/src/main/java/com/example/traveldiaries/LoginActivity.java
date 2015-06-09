@@ -38,10 +38,6 @@ public class LoginActivity extends Activity {
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        //getActionBar().hide();
-
-        //final int STATUS_BAR_COLOR = getResources().getColor(R.color.DarkerLimeGreen);
-        //getWindow().setStatusBarColor(STATUS_BAR_COLOR);
 
         usernameView = (EditText) findViewById(R.id.username);
         passwordView = (EditText) findViewById(R.id.password);

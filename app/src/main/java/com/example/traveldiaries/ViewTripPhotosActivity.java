@@ -27,6 +27,9 @@ import com.parse.ParseQuery;
 
 import java.util.ArrayList;
 import java.util.List;
+/*
+ *  adds the pictures,notes taken in a trip at a place
+ *  to the route with marker at that particular place*/
 
 public class ViewTripPhotosActivity extends Activity {
     private int imageShowing;
@@ -50,14 +53,14 @@ public class ViewTripPhotosActivity extends Activity {
 
         ImageAdapter adapter = new ImageAdapter(ViewTripPhotosActivity.this, pics_icons);
 
-        //BitmapFactory.Options options = new BitmapFactory.Options();
-        //options.inSampleSize = 4;
-
         final DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("TripPhotoNote");
         query.fromPin(pin);
+        /* gets the latlng of the nearest place selected
+        * and adds the photos to the marker
+        * with that geotag to the trip route */
         try {
             String note;
             String geotagTimeStamp;
@@ -109,7 +112,6 @@ public class ViewTripPhotosActivity extends Activity {
                     data = null;
                     bitmap = null;
                 }
-                //picture.setImageBitmap(pics_icons.get(imageShowing));
 
                 final TextView caption=(TextView) image_dialog.findViewById(R.id.caption);
                 caption.setText(pic_notes.get(imageShowing));
