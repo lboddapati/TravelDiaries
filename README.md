@@ -12,5 +12,5 @@ to place directions. Get the optimal route to minimize travel time for covering 
 - Document your trip -> Add pictures and notes to each place as you go along your trip to relive your happy memories later.
 
 # Demo
-https://drive.google.com/file/d/0B5d7U_J1HZBeM0Nmbm9ReEJqc3c/view?pli=1
+https://youtu.be/ETiXrLYRKio
 
